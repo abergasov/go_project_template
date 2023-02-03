@@ -1,1 +1,5 @@
-# go_project_template
+## Overview
+local run in docker
+```shell
+make run
+```

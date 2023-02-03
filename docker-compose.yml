@@ -1,0 +1,39 @@
+version: '3'
+
+volumes:
+  data_pq_volume:
+
+services:
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        CONF_PATH: configs/app_conf_docker.yml
+    restart: always
+    environment:
+      GIT_HASH: $GIT_HASH
+    ports:
+      - 8000:8000
+    depends_on:
+      - dbPostgres
+    networks:
+      - app-network
+    command: [ "/app/binary", "--config", "configs/app_conf_docker.yml" ]
+
+  dbPostgres:
+    image: postgres:14.2
+    env_file:
+      - configs/common.env
+    ports:
+      - "5449:5432"
+    networks:
+      - app-network
+    volumes:
+      - data_pq_volume:/var/lib/postgresql/data
+
+#Docker Networks
+networks:
+  app-network:
+    driver: bridge
