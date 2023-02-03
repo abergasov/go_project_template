@@ -36,12 +36,12 @@ func main() {
 	}
 
 	appLog.Info("create storage connections")
-	dbConn, err := getDBConnect(&appConf.ConfigDB)
+	dbConn, err := getDBConnect(&appConf.ConfigDB, appConf.MigratesFolder)
 	if err != nil {
 		appLog.Fatal("unable to connect to db", err, zap.String("host", appConf.ConfigDB.Address))
 	}
 	defer func() {
-		if err = dbConn.Client().Close(); err != nil {
+		if err = dbConn.Close(); err != nil {
 			appLog.Fatal("unable to close db connection", err)
 		}
 	}()
@@ -71,9 +71,9 @@ func main() {
 	<-c // This blocks the main thread until an interrupt is received
 }
 
-func getDBConnect(cnf *config.DBConf) (*database.DBConnect, error) {
+func getDBConnect(cnf *config.DBConf, migratesFolder string) (*database.DBConnect, error) {
 	for i := 0; i < 5; i++ {
-		dbConnect, err := database.InitDBConnect(cnf)
+		dbConnect, err := database.InitDBConnect(cnf, migratesFolder)
 		if err == nil {
 			return dbConnect, nil
 		}

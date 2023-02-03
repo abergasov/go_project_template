@@ -38,17 +38,17 @@ dev_up: stop ## Runs local environment
 	${info Running docker-compose up...}
 	GIT_HASH=${FILE_HASH} docker compose -p ${PROJECT_NAME} up --build dbPostgres
 
-build:
+build: ## Builds binary
 	@echo "-- building binary"
 	go build -o ./bin/binary ./cmd
-
-build_docker:
-	@echo "-- building docker binary. buildHash ${FILE_HASH}"
-	go build -ldflags "-X main.confFile=common_docker.yml -X main.buildHash=${FILE_HASH} -X main.buildTime=${BUILD_TIME}" -o ./bin/collector ./cmd
 
 run: ## Runs binary local with environment in docker
 	${info Run app containered}
 	GIT_HASH=${FILE_HASH} docker compose -p ${PROJECT_NAME} up --build
 
-.PHONY: help install-lint test gogen lint stop dev_up build run
+migrate_new: ## Create new migration
+	migrate create -ext sql -dir migrations -seq data
+
+
+.PHONY: help install-lint test gogen lint stop dev_up build run init_repo migrate_new
 .DEFAULT_GOAL := help

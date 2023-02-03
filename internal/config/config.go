@@ -10,8 +10,9 @@ import (
 )
 
 type AppConfig struct {
-	AppPort  int    `yaml:"app_port"`
-	ConfigDB DBConf `yaml:"conf_db"`
+	AppPort        int    `yaml:"app_port"`
+	MigratesFolder string `yaml:"migrates_folder"`
+	ConfigDB       DBConf `yaml:"conf_db"`
 }
 
 type DBConf struct {
