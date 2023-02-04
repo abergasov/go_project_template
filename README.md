@@ -1,5 +1,6 @@
 ## Overview
-init after clone 
+init after clone
+Set project name in Makefile and run
 ```shell
 make init_repo
 ```

@@ -5,6 +5,11 @@ init_repo: ## create necessary configs
 	cp configs/sample.common.env configs/common.env
 	cp configs/sample.app_conf.yml configs/app_conf.yml
 	cp configs/sample.app_conf_docker.yml configs/app_conf_docker.yml
+	find . -type f -name "*.go" -exec sed -i 's/go_project_template/${PROJECT_NAME}/g' {} +
+	find . -type f -name "*.mod" -exec sed -i 's/go_project_template/${PROJECT_NAME}/g' {} +
+	go mod tidy && go mod vendor
+	go install golang.org/x/tools/cmd/goimports@latest
+	goimports -local github.com/$(PROJECT_NAME) -w .
 
 help:
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'
