@@ -8,6 +8,7 @@ require (
 	github.com/hashicorp/golang-lru v0.6.0
 	github.com/jmoiron/sqlx v1.3.5
 	github.com/lib/pq v1.10.7
+	github.com/neo4j/neo4j-go-driver/v4 v4.4.5
 	github.com/stretchr/testify v1.8.0
 	go.uber.org/zap v1.24.0
 	gopkg.in/yaml.v2 v2.4.0
