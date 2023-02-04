@@ -99,7 +99,7 @@ func (s *Cache) Get(key string) (value []byte, exist bool) {
 	return nil, false
 }
 
-func (s *Cache) onEvict(key interface{}, value interface{}) {
+func (s *Cache) onEvict(key, value interface{}) {
 	valueBytes, ok := value.([]byte)
 	if !ok {
 		// unknown type of value, skip it
