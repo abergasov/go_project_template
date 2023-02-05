@@ -26,7 +26,8 @@ gogen: ## generate code
 
 test: ## Runs tests
 	${info Running tests...}
-	go test -v -race ./...
+	go test -v -race ./... -cover -coverprofile cover.out
+	go tool cover -func cover.out | grep total
 
 lint: install-lint ## Runs linters
 	@echo "-- linter running"
