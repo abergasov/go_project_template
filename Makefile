@@ -29,6 +29,10 @@ test: ## Runs tests
 	go test -v -race ./... -cover -coverprofile cover.out
 	go tool cover -func cover.out | grep total
 
+bench: ## Runs benchmarks
+	${info Running benchmarks...}
+	go test -bench=. -benchmem ./... -run=^#
+
 lint: install-lint ## Runs linters
 	@echo "-- linter running"
 	golangci-lint run -c .golangci.yaml ./internal...
