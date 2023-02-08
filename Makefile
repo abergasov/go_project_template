@@ -1,5 +1,6 @@
 PROJECT_NAME:=sampler
 FILE_HASH := $(shell git rev-parse HEAD)
+GOLANGCI_LINT := $(shell command -v golangci-lint 2> /dev/null)
 
 init_repo: ## create necessary configs
 	cp configs/sample.common.env configs/common.env
