@@ -1,8 +1,15 @@
 FROM golang:1.19 AS build
 RUN echo "Based on commit: $GIT_HASH"
-COPY . /app
+
+# All these steps will be cached
+RUN mkdir /app
 WORKDIR /app
-RUN go mod tidy && go mod vendor
+COPY go.mod .
+COPY go.sum .
+RUN go mod download
+# COPY the source code as the last step
+COPY . .
+
 RUN make build
 
 # step 2 - create container to run
