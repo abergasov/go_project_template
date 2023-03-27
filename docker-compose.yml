@@ -6,7 +6,6 @@ volumes:
   nf_conf_data:
 
 services:
-
   app:
     build:
       context: .
