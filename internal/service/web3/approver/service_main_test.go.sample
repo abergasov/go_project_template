@@ -1,0 +1,15 @@
+package approver_test
+
+import (
+	"log"
+	"os"
+)
+
+func init() {
+	if err := os.Setenv("ETH_CLIENT_RPC", "http://"); err != nil {
+		log.Fatalln("unable to set env variable: ETH_CLIENT_RPC", err)
+	}
+	if err := os.Setenv("PRIVATE_KEY", "123"); err != nil {
+		log.Fatalln("unable to set env variable: PRIVATE_KEY", err)
+	}
+}

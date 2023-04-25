@@ -4,3 +4,4 @@ configs/app_conf.yml
 configs/common.env
 configs/app_conf_docker.yml
 bin
+internal/service/web3/approver/service_main_test.go

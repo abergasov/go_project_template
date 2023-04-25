@@ -21,6 +21,10 @@ ifndef GOLANGCI_LINT
 	go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest
 endif
 
+abi: ## generate abi struct
+	abigen --abi internal/service/web3/approver/erc20.abi.json --pkg approver --type Erc20 --out erc_20.go
+	mv erc_20.go internal/service/web3/approver/
+
 gogen: ## generate code
 	${info generate code...}
 	go generate ./internal...
