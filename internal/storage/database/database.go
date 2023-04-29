@@ -36,10 +36,28 @@ func InitDBConnect(cnf *config.DBConf, migratesFolder string) (*DBConnect, error
 		return nil, fmt.Errorf("error ping to db: %w", err)
 	}
 	conn := &DBConnect{db}
-	if err = conn.migrate(migratesFolder); err != nil && err != migrate.ErrNoChange {
-		return nil, fmt.Errorf("error migrate db: %w", err)
+	if migratesFolder != "" {
+		if err = conn.migrate(migratesFolder); err != nil && err != migrate.ErrNoChange {
+			return nil, fmt.Errorf("error migrate db: %w", err)
+		}
 	}
 	return conn, nil
+}
+
+func InitSQLiteDBConnect(dbPath string) (DBConnector, error) {
+	db, err := sqlx.Connect("sqlite3", dbPath)
+	if err != nil {
+		return nil, fmt.Errorf("error connect to db: %w", err)
+	}
+	return &DBConnect{db}, err
+}
+
+func InitSQLiteDBConnectMemory() (DBConnector, error) {
+	db, err := sqlx.Connect("sqlite3", ":memory:")
+	if err != nil {
+		return nil, fmt.Errorf("error connect to db: %w", err)
+	}
+	return &DBConnect{db}, err
 }
 
 func (d *DBConnect) Close() error {
