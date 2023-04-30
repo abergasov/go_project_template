@@ -5,6 +5,7 @@ import (
 	"crypto/ecdsa"
 	"fmt"
 	"math/big"
+	"sync"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
@@ -80,4 +81,37 @@ func (s *Service) GetERC20TokenBalance(ctx context.Context, web3Client *ethclien
 		return nil, fmt.Errorf("unable to get balance: %w", err)
 	}
 	return val, nil
+}
+
+func (s *Service) GetContractData(ctx context.Context, web3Client *ethclient.Client, tokenAddress common.Address) (ticker string, decimal uint8, err error) {
+	contract, err := NewErc20(tokenAddress, web3Client)
+	if err != nil {
+		return "", 0, err
+	}
+	var wg sync.WaitGroup
+	wg.Add(2)
+	var (
+		errTicker  error
+		errDecimal error
+	)
+	go func() {
+		defer wg.Done()
+		ticker, errTicker = contract.Symbol(&bind.CallOpts{
+			Context: ctx,
+		})
+	}()
+	go func() {
+		defer wg.Done()
+		decimal, errDecimal = contract.Decimals(&bind.CallOpts{
+			Context: ctx,
+		})
+	}()
+	wg.Wait()
+	if errTicker != nil {
+		return "", 0, fmt.Errorf("unable to get ticker: %w", errTicker)
+	}
+	if errDecimal != nil {
+		return "", 0, fmt.Errorf("unable to get decimal: %w", errDecimal)
+	}
+	return ticker, decimal, nil
 }

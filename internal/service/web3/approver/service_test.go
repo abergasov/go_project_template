@@ -58,6 +58,19 @@ func TestService_GetERC20TokenBalance(t *testing.T) {
 	t.Log("val:", utils.CustomFromWei(val, 6))
 }
 
+func TestService_GetContractData(t *testing.T) {
+	service := approver.InitService()
+	ethClient, _, _ := initTest(t)
+	usdc := common.HexToAddress(usdcAddress)
+
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+	ticker, decimal, err := service.GetContractData(ctx, ethClient, usdc)
+	require.NoError(t, err)
+	require.Equal(t, "USDC", ticker)
+	require.Equal(t, uint8(6), decimal)
+}
+
 func initTest(t *testing.T) (*ethclient.Client, *ecdsa.PrivateKey, common.Address) {
 	ethClientRPC := os.Getenv("ETH_CLIENT_RPC")
 	if ethClientRPC == "" {
