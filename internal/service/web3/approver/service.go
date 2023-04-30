@@ -59,3 +59,25 @@ func (s *Service) ApproveContractUsageALL(web3Client *ethclient.Client, privateK
 
 	return tx.Hash().String(), nil
 }
+
+func (s *Service) GetNativeTokenBalance(ctx context.Context, web3Client *ethclient.Client, address common.Address) (*big.Int, error) {
+	val, err := web3Client.BalanceAt(ctx, address, nil)
+	if err != nil {
+		return nil, fmt.Errorf("unable to get balance: %w", err)
+	}
+	return val, nil
+}
+
+func (s *Service) GetERC20TokenBalance(ctx context.Context, web3Client *ethclient.Client, tokenAddress, address common.Address) (*big.Int, error) {
+	contract, err := NewErc20(tokenAddress, web3Client)
+	if err != nil {
+		return nil, err
+	}
+	val, err := contract.BalanceOf(&bind.CallOpts{
+		Context: ctx,
+	}, address)
+	if err != nil {
+		return nil, fmt.Errorf("unable to get balance: %w", err)
+	}
+	return val, nil
+}

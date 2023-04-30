@@ -10,6 +10,8 @@ require (
 	github.com/jmoiron/sqlx v1.3.5
 	github.com/lib/pq v1.10.7
 	github.com/neo4j/neo4j-go-driver/v4 v4.4.5
+	github.com/phayes/freeport v0.0.0-20220201140144-74d24b5ae9f5
+	github.com/shopspring/decimal v1.2.0
 	github.com/stretchr/testify v1.8.0
 	go.uber.org/zap v1.24.0
 	gopkg.in/yaml.v2 v2.4.0
