@@ -24,6 +24,8 @@ endif
 abi: ## generate abi struct
 	abigen --abi internal/service/web3/approver/erc20.abi.json --pkg approver --type Erc20 --out erc_20.go
 	mv erc_20.go internal/service/web3/approver/
+	abigen --abi internal/service/web3/swapper/stargate.abi.json --pkg swapper --type StargateRouter --out stargate_abi.go
+	mv stargate_abi.go internal/service/web3/swapper/
 
 gogen: ## generate code
 	${info generate code...}
