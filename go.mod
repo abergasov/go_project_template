@@ -6,6 +6,7 @@ require (
 	github.com/ethereum/go-ethereum v1.11.6
 	github.com/gofiber/fiber/v2 v2.42.0
 	github.com/golang-migrate/migrate/v4 v4.15.2
+	github.com/google/brotli/go/cbrotli v0.0.0-20230201092028-ed1995b6bda1
 	github.com/hashicorp/golang-lru v0.6.0
 	github.com/jmoiron/sqlx v1.3.5
 	github.com/lib/pq v1.10.7

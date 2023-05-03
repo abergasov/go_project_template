@@ -35,3 +35,9 @@ func CustomFromWei(wei *big.Int, decimals int) string {
 	mul := decimal.NewFromFloat(float64(10)).Pow(decimal.NewFromFloat(float64(decimals)))
 	return amount.Div(mul).String()
 }
+
+func CustomToWei(amount float64, decimals int) *big.Int {
+	amountDecimal := decimal.NewFromFloat(amount)
+	mul := decimal.NewFromFloat(float64(10)).Pow(decimal.NewFromFloat(float64(decimals)))
+	return amountDecimal.Mul(mul).BigInt()
+}

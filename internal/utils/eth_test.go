@@ -71,3 +71,15 @@ func TestCustomFromWei(t *testing.T) {
 		require.Equal(t, eth, res)
 	}
 }
+
+func TestCustomToWei(t *testing.T) {
+	table := map[float64]string{
+		2815.394107: "2815394107",
+	}
+	for val, wei := range table {
+		a, ok := big.NewInt(0).SetString(wei, 10)
+		require.True(t, ok)
+		res := utils.CustomToWei(val, 6)
+		require.Equal(t, a, res)
+	}
+}
