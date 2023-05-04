@@ -3,6 +3,8 @@ package approver_test
 import (
 	"context"
 	"crypto/ecdsa"
+	"go_project_template/internal/logger"
+	"go_project_template/internal/service/web3"
 	"go_project_template/internal/service/web3/approver"
 	"go_project_template/internal/utils"
 	"os"
@@ -16,18 +18,24 @@ import (
 )
 
 const (
-	usdcAddress    = "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48" // in eth mainnet
 	sampleContract = "0x8731d54E9D02c286767d56ac03e8037C07e01e98" // in eth mainnet
 )
 
 func TestService_ApproveContractUsage(t *testing.T) {
-	service := approver.InitService()
+	appLog, err := logger.NewAppLogger("")
+	require.NoError(t, err)
+	service := approver.InitService(appLog)
 	ethClient, privateKey, accAddress := initTest(t)
+
+	chainID, err := ethClient.ChainID(context.Background())
+	require.NoError(t, err)
+	tokenAddress, err := web3.GetTokenAddress(chainID, web3.USDC)
+	require.NoError(t, err)
 
 	approveTxHash, err := service.ApproveContractUsageALL(
 		ethClient,
 		privateKey,
-		common.HexToAddress(usdcAddress),
+		tokenAddress,
 		accAddress,
 		common.HexToAddress(sampleContract),
 	)
@@ -36,7 +44,9 @@ func TestService_ApproveContractUsage(t *testing.T) {
 }
 
 func TestService_GetNativeTokenBalance(t *testing.T) {
-	service := approver.InitService()
+	appLog, err := logger.NewAppLogger("")
+	require.NoError(t, err)
+	service := approver.InitService(appLog)
 	ethClient, _, accAddress := initTest(t)
 
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
@@ -47,25 +57,36 @@ func TestService_GetNativeTokenBalance(t *testing.T) {
 }
 
 func TestService_GetERC20TokenBalance(t *testing.T) {
-	service := approver.InitService()
+	appLog, err := logger.NewAppLogger("")
+	require.NoError(t, err)
+	service := approver.InitService(appLog)
 	ethClient, _, accAddress := initTest(t)
-	usdc := common.HexToAddress(usdcAddress)
 
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
-	val, err := service.GetERC20TokenBalance(ctx, ethClient, usdc, accAddress)
+
+	chainID, err := ethClient.ChainID(context.Background())
+	require.NoError(t, err)
+	tokenAddress, err := web3.GetTokenAddress(chainID, web3.USDC)
+	require.NoError(t, err)
+	val, err := service.GetERC20TokenBalance(ctx, ethClient, tokenAddress, accAddress)
 	require.NoError(t, err)
 	t.Log("val:", utils.CustomFromWei(val, 6))
 }
 
 func TestService_GetContractData(t *testing.T) {
-	service := approver.InitService()
+	appLog, err := logger.NewAppLogger("")
+	require.NoError(t, err)
+	service := approver.InitService(appLog)
 	ethClient, _, _ := initTest(t)
-	usdc := common.HexToAddress(usdcAddress)
+	chainID, err := ethClient.ChainID(context.Background())
+	require.NoError(t, err)
+	tokenAddress, err := web3.GetTokenAddress(chainID, web3.USDC)
+	require.NoError(t, err)
 
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
-	ticker, decimal, err := service.GetContractData(ctx, ethClient, usdc)
+	ticker, decimal, err := service.GetContractData(ctx, ethClient, tokenAddress)
 	require.NoError(t, err)
 	require.Equal(t, "USDC", ticker)
 	require.Equal(t, uint8(6), decimal)
