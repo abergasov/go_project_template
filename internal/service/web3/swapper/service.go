@@ -28,6 +28,39 @@ func NewService(appLog logger.AppLogger, erc20 *approver.Service) *Service {
 	}
 }
 
+func (s *Service) suggestGas(ctx context.Context, web3Client *ethclient.Client, holder common.Address) (nonce uint64, gasPrice, gasTipCap *big.Int, err error) {
+	var wg sync.WaitGroup
+	var (
+		errNonce     error
+		errGasTipCap error
+		errGasPrice  error
+	)
+	wg.Add(3)
+	go func() {
+		defer wg.Done()
+		nonce, errNonce = web3Client.PendingNonceAt(context.Background(), holder)
+	}()
+	go func() {
+		defer wg.Done()
+		gasTipCap, errGasTipCap = web3Client.SuggestGasTipCap(ctx)
+	}()
+	go func() {
+		defer wg.Done()
+		gasPrice, errGasPrice = web3Client.SuggestGasPrice(ctx)
+	}()
+	wg.Wait()
+	if errNonce != nil {
+		return 0, nil, nil, fmt.Errorf("unable to get nonce: %w", errNonce)
+	}
+	if errGasTipCap != nil {
+		return 0, nil, nil, fmt.Errorf("unable to get gas tip cap: %w", errGasTipCap)
+	}
+	if errGasPrice != nil {
+		return 0, nil, nil, fmt.Errorf("unable to get gas price: %w", errGasPrice)
+	}
+	return nonce, gasPrice, gasTipCap, nil
+}
+
 func (s *Service) suggestedFeeAndTipWithNonce(ctx context.Context, web3Client *ethclient.Client, gasPrice *big.Int, boostPercent int, holder common.Address) (nonce uint64, gasFeeCap, gasTipCap *big.Int, err error) {
 	var wg sync.WaitGroup
 	var (

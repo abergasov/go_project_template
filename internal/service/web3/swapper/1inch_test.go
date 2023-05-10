@@ -28,9 +28,9 @@ func TestService_Swap1Inch(t *testing.T) {
 		privateKey,
 		address,
 		1,
-		web3.USDC,
-		10,
 		web3.DAI,
+		10,
+		web3.USDC,
 	)
 	require.NoError(t, err)
 }

@@ -77,6 +77,7 @@ func (s *Service) Swap1Inch(
 	to web3.Coin,
 ) error {
 	log := s.log.With(zap.String("from", string(from))).With(zap.String("to", string(to))).With(zap.Float64("amount", swapAmount))
+	log.Info("start 1inch swap")
 	chainID, err := web3Client.ChainID(ctx)
 	if err != nil {
 		return fmt.Errorf("unable to get chain id: %w", err)
