@@ -2,6 +2,11 @@ PROJECT_NAME:=sampler
 FILE_HASH := $(shell git rev-parse HEAD)
 GOLANGCI_LINT := $(shell command -v golangci-lint 2> /dev/null)
 
+# test coverage threshold
+COVERAGE_THRESHOLD:=70
+COVERAGE_TOTAL := $(shell go tool cover -func=cover.out | grep total | grep -Eo '[0-9]+\.[0-9]+')
+COVERAGE_PASS_THRESHOLD := $(shell echo "$(COVERAGE_TOTAL) $(COVERAGE_THRESHOLD)" | awk '{print ($$1 >= $$2)}')
+
 init_repo: ## create necessary configs
 	cp configs/sample.common.env configs/common.env
 	cp configs/sample.app_conf.yml configs/app_conf.yml
@@ -70,6 +75,13 @@ run: ## Runs binary local with environment in docker
 migrate_new: ## Create new migration
 	migrate create -ext sql -dir migrations -seq data
 
+coverage: ## Check test coverage is enough
+	@echo "Threshold:                ${COVERAGE_THRESHOLD}%"
+	@echo "Current test coverage is: ${COVERAGE_TOTAL}%"
+	@if [ "${COVERAGE_PASS_THRESHOLD}" -eq "0" ] ; then \
+		echo "Test coverage is lower than threshold"; \
+		exit 1; \
+	fi
 
-.PHONY: help install-lint test gogen lint stop dev_up build run init_repo migrate_new vulcheck
+.PHONY: help install-lint test gogen lint stop dev_up build run init_repo migrate_new vulcheck coverage
 .DEFAULT_GOAL := help
