@@ -68,6 +68,10 @@ build: ## Builds binary
 	@echo "-- building binary"
 	go build -o ./bin/binary ./cmd
 
+build_in_docker: ## Builds binary in docker
+	@echo "-- building docker image"
+	CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o ./bin/binary ./cmd
+
 run: ## Runs binary local with environment in docker
 	${info Run app containered}
 	GIT_HASH=${FILE_HASH} docker compose -p ${PROJECT_NAME} up --build -d
@@ -83,5 +87,5 @@ coverage: ## Check test coverage is enough
 		exit 1; \
 	fi
 
-.PHONY: help install-lint test gogen lint stop dev_up build run init_repo migrate_new vulcheck coverage
+.PHONY: help install-lint test gogen lint stop dev_up build run init_repo migrate_new vulcheck coverage build_in_docker
 .DEFAULT_GOAL := help
