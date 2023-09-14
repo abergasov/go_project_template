@@ -30,9 +30,7 @@ func GetClean(t *testing.T) *TestContainer {
 		require.NoError(t, dbConnect.Client().Close())
 	})
 
-	appLog, err := logger.NewAppLogger("test")
-	require.NoError(t, err)
-
+	appLog := logger.NewAppSLogger("test")
 	// repo init
 	repo := sampler.InitRepo(dbConnect)
 

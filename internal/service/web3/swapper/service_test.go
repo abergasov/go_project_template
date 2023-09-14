@@ -14,8 +14,7 @@ import (
 )
 
 func TestService_TransferETH(t *testing.T) {
-	appLog, err := logger.NewAppLogger("")
-	require.NoError(t, err)
+	appLog := logger.NewAppSLogger("")
 	service := swapper.NewService(appLog, nil)
 	ethClient, privateKey, address := initTest(t)
 

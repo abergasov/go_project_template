@@ -13,8 +13,7 @@ import (
 )
 
 func TestService_Swap1Inch(t *testing.T) {
-	appLog, err := logger.NewAppLogger("")
-	require.NoError(t, err)
+	appLog := logger.NewAppSLogger("")
 	erc20Approver := approver.InitService(appLog)
 	service := swapper.NewService(appLog, erc20Approver)
 	ethClient, privateKey, address := initTest(t)
@@ -22,7 +21,7 @@ func TestService_Swap1Inch(t *testing.T) {
 	ctx, cancel := context.WithTimeout(context.Background(), 360*time.Second)
 	defer cancel()
 
-	err = service.Swap1Inch(
+	err := service.Swap1Inch(
 		ctx,
 		ethClient,
 		privateKey,

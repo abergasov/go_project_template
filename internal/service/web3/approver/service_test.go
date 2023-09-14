@@ -22,8 +22,7 @@ const (
 )
 
 func TestService_ApproveContractUsage(t *testing.T) {
-	appLog, err := logger.NewAppLogger("")
-	require.NoError(t, err)
+	appLog := logger.NewAppSLogger("")
 	service := approver.InitService(appLog)
 	ethClient, privateKey, accAddress := initTest(t)
 
@@ -44,8 +43,7 @@ func TestService_ApproveContractUsage(t *testing.T) {
 }
 
 func TestService_GetNativeTokenBalance(t *testing.T) {
-	appLog, err := logger.NewAppLogger("")
-	require.NoError(t, err)
+	appLog := logger.NewAppSLogger("")
 	service := approver.InitService(appLog)
 	ethClient, _, accAddress := initTest(t)
 
@@ -57,8 +55,7 @@ func TestService_GetNativeTokenBalance(t *testing.T) {
 }
 
 func TestService_GetERC20TokenBalance(t *testing.T) {
-	appLog, err := logger.NewAppLogger("")
-	require.NoError(t, err)
+	appLog := logger.NewAppSLogger("")
 	service := approver.InitService(appLog)
 	ethClient, _, accAddress := initTest(t)
 
@@ -75,8 +72,7 @@ func TestService_GetERC20TokenBalance(t *testing.T) {
 }
 
 func TestService_GetContractData(t *testing.T) {
-	appLog, err := logger.NewAppLogger("")
-	require.NoError(t, err)
+	appLog := logger.NewAppSLogger("")
 	service := approver.InitService(appLog)
 	ethClient, _, _ := initTest(t)
 	chainID, err := ethClient.ChainID(context.Background())

@@ -1,6 +1,6 @@
 module go_project_template
 
-go 1.20
+go 1.21
 
 require (
 	github.com/ethereum/go-ethereum v1.11.6
@@ -14,7 +14,6 @@ require (
 	github.com/phayes/freeport v0.0.0-20220201140144-74d24b5ae9f5
 	github.com/shopspring/decimal v1.2.0
 	github.com/stretchr/testify v1.8.0
-	go.uber.org/zap v1.24.0
 	gopkg.in/yaml.v2 v2.4.0
 )
 
@@ -50,7 +49,6 @@ require (
 	github.com/valyala/fasthttp v1.44.0 // indirect
 	github.com/valyala/tcplisten v1.0.0 // indirect
 	go.uber.org/atomic v1.7.0 // indirect
-	go.uber.org/multierr v1.6.0 // indirect
 	golang.org/x/crypto v0.1.0 // indirect
 	golang.org/x/sys v0.6.0 // indirect
 	gopkg.in/natefinch/npipe.v2 v2.0.0-20160621034901-c1b8fa8bdcce // indirect

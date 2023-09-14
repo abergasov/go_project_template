@@ -7,10 +7,9 @@ import (
 	"fmt"
 	"go_project_template/internal/service/web3"
 	"go_project_template/internal/utils"
+	"log/slog"
 	"math/big"
 	"net/http"
-
-	"go.uber.org/zap"
 
 	"github.com/shopspring/decimal"
 
@@ -76,7 +75,11 @@ func (s *Service) Swap1Inch(
 	swapAmount float64,
 	to web3.Coin,
 ) error {
-	log := s.log.With(zap.String("from", string(from))).With(zap.String("to", string(to))).With(zap.Float64("amount", swapAmount))
+	log := s.log.With(
+		slog.String("from", string(from)),
+		slog.String("to", string(to)),
+		slog.Float64("amount", swapAmount),
+	)
 	log.Info("start 1inch swap")
 	chainID, err := web3Client.ChainID(ctx)
 	if err != nil {
@@ -127,7 +130,12 @@ func (s *Service) Swap1Inch(
 		Value:     big.NewInt(0),
 		Data:      common.FromHex(res.Tx.Data),
 	})
-	log.Info("run transaction", zap.String("gas tip cap", gasTipCap.String()), zap.String("gas fee cap", gasFeeCap.String()), zap.Uint64("gas limit", res.Tx.Gas))
+	log.Info(
+		"run transaction",
+		slog.String("gas tip cap", gasTipCap.String()),
+		slog.String("gas fee cap", gasFeeCap.String()),
+		slog.Uint64("gas limit", res.Tx.Gas),
+	)
 	signedTx, err := types.SignTx(broadcastTx, types.LatestSignerForChainID(chainID), privateKey)
 	if err != nil {
 		return fmt.Errorf("unable to sign tx: %w", err)

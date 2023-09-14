@@ -36,8 +36,8 @@ func GetTokenAddress(chainId *big.Int, coin Coin) (common.Address, error) {
 	if _, ok := Tokens[coin]; !ok {
 		return common.Address{}, ErrUnknownCoin
 	}
-	if _, ok := Tokens[coin][chainId.Uint64()]; !ok {
+	if _, ok := Tokens[coin][chainID.Uint64()]; !ok {
 		return common.Address{}, ErrUnknownChain
 	}
-	return Tokens[coin][chainId.Uint64()], nil
+	return Tokens[coin][chainID.Uint64()], nil
 }

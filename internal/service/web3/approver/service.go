@@ -6,11 +6,10 @@ import (
 	"errors"
 	"fmt"
 	"go_project_template/internal/logger"
+	"log/slog"
 	"math/big"
 	"sync"
 	"time"
-
-	"go.uber.org/zap"
 
 	"github.com/ethereum/go-ethereum"
 
@@ -40,7 +39,11 @@ func InitService(appLog logger.AppLogger) *Service {
 
 // ApproveContractUsageALL approves the contract to spend all the tokens
 func (s *Service) ApproveContractUsageALL(web3Client *ethclient.Client, privateKey *ecdsa.PrivateKey, tokenAddress, holder, spender common.Address) (string, error) {
-	log := s.log.With(zap.String("tokenAddress", tokenAddress.String())).With(zap.String("holder", holder.String())).With(zap.String("spender", spender.String()))
+	log := s.log.With(
+		slog.String("tokenAddress", tokenAddress.String()),
+		slog.String("holder", holder.String()),
+		slog.String("spender", spender.String()),
+	)
 	contract, err := NewErc20(tokenAddress, web3Client)
 	if err != nil {
 		return "", err
@@ -49,9 +52,9 @@ func (s *Service) ApproveContractUsageALL(web3Client *ethclient.Client, privateK
 	if err != nil {
 		return "", fmt.Errorf("unable to get allowance: %w", err)
 	}
-	log.Info("allowance", zap.String("allowance", total.String()))
+	log.Info("allowance", slog.String("allowance", total.String()))
 	if total.Cmp(s.maxAllowed) == 0 { // they are equal
-		log.Info("already approved", zap.String("allowance", total.String()))
+		log.Info("already approved", slog.String("allowance", total.String()))
 		return "", nil
 	}
 
@@ -59,7 +62,7 @@ func (s *Service) ApproveContractUsageALL(web3Client *ethclient.Client, privateK
 	if err != nil {
 		return "", fmt.Errorf("unable to get chain id: %w", err)
 	}
-	log.Info("approving", zap.String("allowance", s.maxAllowed.String()), zap.Uint64("chainID", chainID.Uint64()))
+	log.Info("approving", slog.String("allowance", s.maxAllowed.String()), slog.Uint64("chainID", chainID.Uint64()))
 
 	tx, err := contract.Approve(&bind.TransactOpts{
 		From: holder,
@@ -71,7 +74,7 @@ func (s *Service) ApproveContractUsageALL(web3Client *ethclient.Client, privateK
 		return "", fmt.Errorf("unable to approve: %w", err)
 	}
 
-	log.Info("tx sent", zap.String("txHash", tx.Hash().String()))
+	log.Info("tx sent", slog.String("txHash", tx.Hash().String()))
 	return tx.Hash().String(), nil
 }
 

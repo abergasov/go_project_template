@@ -3,8 +3,7 @@ package sampler
 import (
 	"go_project_template/internal/logger"
 	"go_project_template/internal/repository/sampler"
-
-	"go.uber.org/zap"
+	"log/slog"
 )
 
 type Service struct {
@@ -15,6 +14,6 @@ type Service struct {
 func InitService(log logger.AppLogger, repo *sampler.Repo) *Service {
 	return &Service{
 		repo: repo,
-		log:  log.With(zap.String("service", "sampler")),
+		log:  log.With(slog.String("service", "sampler")),
 	}
 }

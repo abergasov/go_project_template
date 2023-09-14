@@ -1,10 +1,12 @@
 package logger
 
-import "go.uber.org/zap/zapcore"
+import (
+	"log/slog"
+)
 
 type AppLogger interface {
-	Info(message string, args ...zapcore.Field)
-	Error(message string, err error, args ...zapcore.Field)
-	Fatal(message string, err error, args ...zapcore.Field)
-	With(arg zapcore.Field) AppLogger
+	Info(message string, args ...slog.Attr)
+	Error(message string, err error, args ...slog.Attr)
+	Fatal(message string, err error, args ...slog.Attr)
+	With(args ...slog.Attr) AppLogger
 }
