@@ -32,7 +32,7 @@ var Tokens = map[Coin]map[uint64]common.Address{
 	},
 }
 
-func GetTokenAddress(chainId *big.Int, coin Coin) (common.Address, error) {
+func GetTokenAddress(chainID *big.Int, coin Coin) (common.Address, error) {
 	if _, ok := Tokens[coin]; !ok {
 		return common.Address{}, ErrUnknownCoin
 	}
