@@ -42,7 +42,7 @@ func (l *SLogger) With(args ...slog.Attr) AppLogger {
 func prepareSlogParams(err error, args []slog.Attr) []any {
 	params := make([]any, 0, len(args)+1)
 	if err != nil {
-		params = append(params, err)
+		params = append(params, slog.String("error", err.Error()))
 	}
 	for _, arg := range args {
 		params = append(params, arg)
