@@ -54,6 +54,9 @@ lint: install-lint ## Runs linters
 	golangci-lint run -c .golangci.yaml ./internal...
 	golangci-lint run -c .golangci.yaml ./cmd...
 
+lint_d:
+	docker run --rm -v ${PWD}:/app -w /app golangci/golangci-lint:v1.50 golangci-lint run --timeout 5m ./...
+
 stop: ## Stops the local environment
 	${info Stopping containers...}
 	docker container ls -q --filter name=${PROJECT_NAME} ; true

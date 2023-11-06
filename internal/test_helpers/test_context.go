@@ -17,6 +17,7 @@ import (
 )
 
 type TestContainer struct {
+	ServiceSampler *samplerService.Service
 }
 
 func GetClean(t *testing.T) *TestContainer {
@@ -35,8 +36,10 @@ func GetClean(t *testing.T) *TestContainer {
 	repo := sampler.InitRepo(dbConnect)
 
 	// service init
-	samplerService.InitService(appLog, repo)
-	return &TestContainer{}
+	serviceSampler := samplerService.InitService(appLog, repo)
+	return &TestContainer{
+		ServiceSampler: serviceSampler,
+	}
 }
 
 func prepareTestDB(t *testing.T, cnf *config.DBConf) {

@@ -18,7 +18,7 @@ type DBConnect struct {
 }
 
 func InitDBConnect(cnf *config.DBConf, migratesFolder string) (*DBConnect, error) {
-	dsnStr := fmt.Sprintf("dbname=%s sslmode=disable user=%s password=%s host=%s port=%s", cnf.DBName, cnf.User, cnf.Pass, cnf.Address, cnf.Port)
+	dsnStr := fmt.Sprintf("dbname=%s sslmode=disable user=%s password=%s host=%s port=%s connect_timeout=5", cnf.DBName, cnf.User, cnf.Pass, cnf.Address, cnf.Port)
 	db, err := sqlx.Connect("postgres", dsnStr)
 	if err != nil {
 		return nil, fmt.Errorf("error connect to db: %w", err)
