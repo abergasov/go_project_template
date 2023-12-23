@@ -12,8 +12,20 @@ type SLogger struct {
 var _ AppLogger = (*SLogger)(nil)
 
 func NewAppSLogger(appHash string) *SLogger {
-	logger := slog.New(slog.NewJSONHandler(os.Stdout, nil))
+	logger := slog.New(slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{
+		AddSource: false,
+		Level:     nil,
+		ReplaceAttr: func(groups []string, a slog.Attr) slog.Attr {
+			if a.Key == "time" {
+				return slog.Attr{}
+			}
+			return a
+		},
+	}))
 	if appHash != "" {
+		if len(appHash) > 8 {
+			appHash = appHash[:8]
+		}
 		logger = logger.With(slog.String("hash", appHash))
 	}
 
