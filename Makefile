@@ -13,7 +13,7 @@ init_repo: ## create necessary configs
 	cp configs/sample.app_conf_docker.yml configs/app_conf_docker.yml
 	find . -type f -name "*.go" -exec sed -i 's/go_project_template/${PROJECT_NAME}/g' {} +
 	find . -type f -name "*.mod" -exec sed -i 's/go_project_template/${PROJECT_NAME}/g' {} +
-	go mod tidy && go mod vendor
+	go mod tidy && go mod download
 	go install golang.org/x/tools/cmd/goimports@latest
 	goimports -local github.com/$(PROJECT_NAME) -w .
 
