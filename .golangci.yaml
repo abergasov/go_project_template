@@ -20,13 +20,15 @@ linters-settings:
     min-len: 2
     min-occurrences: 5
   depguard:
-    list-type: blacklist
-    packages:
-      # logging is allowed only by logutils.Log, logrus
-      # is allowed to use only in logutils package
-      - github.com/sirupsen/logrus
-    packages-with-error-messages:
-      github.com/sirupsen/logrus: "logging is allowed only by logutils.Log"
+    rules:
+      main:
+        files:
+          - "**/*.go"
+        deny:
+          - pkg: "github.com/sirupsen/logrus"
+            desc: not allowed
+          - pkg: "github.com/pkg/errors"
+            desc: deprecated, should be replaced by standard lib errors package
   misspell:
     locale: US
   goimports:
