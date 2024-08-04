@@ -1,4 +1,4 @@
-package sampler
+package repository
 
 import "go_project_template/internal/storage/database"
 

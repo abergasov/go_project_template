@@ -23,10 +23,6 @@ func NewAppSLogger(appHash string, args ...StringWith) AppLogger {
 
 func InitLogger(writers []io.Writer, appHash string, args ...StringWith) AppLogger {
 	logs := make([]*slog.Logger, 0, len(writers))
-	commit := "unknown"
-	if appHash != "" && len(appHash) > 6 {
-		commit = appHash[:6]
-	}
 	for _, w := range writers {
 		handler := slog.NewJSONHandler(w, &slog.HandlerOptions{
 			ReplaceAttr: func(groups []string, a slog.Attr) slog.Attr {
@@ -43,9 +39,15 @@ func InitLogger(writers []io.Writer, appHash string, args ...StringWith) AppLogg
 				return a
 			},
 		})
-		lw := slog.New(handler).With(
-			slog.String("version", commit),
-		)
+		attrs := make([]any, 0, len(args)+1)
+		if appHash != "" && len(appHash) > 6 {
+			attrs = append(attrs, slog.String("version", appHash[:6]))
+		}
+		for _, arg := range args {
+			attrs = append(attrs, slog.String(arg.Key, arg.Val))
+		}
+
+		lw := slog.New(handler).With(attrs...)
 		logs = append(logs, lw)
 	}
 	return &SLogger{logWriters: logs}

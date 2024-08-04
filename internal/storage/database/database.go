@@ -1,8 +1,10 @@
 package database
 
 import (
+	"context"
 	"fmt"
 	"go_project_template/internal/config"
+	"go_project_template/internal/logger"
 	"time"
 
 	"github.com/jmoiron/sqlx"
@@ -17,7 +19,7 @@ type DBConnect struct {
 	db *sqlx.DB
 }
 
-func InitDBConnect(cnf *config.DBConf, migratesFolder string) (*DBConnect, error) {
+func InitDBConnect(ctx context.Context, cnf *config.DBConf, migratesFolder string) (*DBConnect, error) {
 	dsnStr := fmt.Sprintf("dbname=%s sslmode=disable user=%s password=%s host=%s port=%s connect_timeout=5", cnf.DBName, cnf.User, cnf.Pass, cnf.Address, cnf.Port)
 	db, err := sqlx.Connect("postgres", dsnStr)
 	if err != nil {
@@ -32,7 +34,10 @@ func InitDBConnect(cnf *config.DBConf, migratesFolder string) (*DBConnect, error
 	}
 	db.SetConnMaxLifetime(time.Minute)
 
-	if err = db.Ping(); err != nil {
+	ctxT, cancel := context.WithTimeout(ctx, 5*time.Second)
+	defer cancel()
+
+	if err = db.PingContext(ctxT); err != nil {
 		return nil, fmt.Errorf("error ping to db: %w", err)
 	}
 	conn := &DBConnect{db}
@@ -78,4 +83,16 @@ func (d *DBConnect) migrate(migratesFolder string) error {
 		return fmt.Errorf("error init db migrator: %w", err)
 	}
 	return m.Up()
+}
+
+func GetDBConnect(ctx context.Context, log logger.AppLogger, cnf *config.DBConf, migratesFolder string) (*DBConnect, error) {
+	for i := 0; i < 5; i++ {
+		dbConnect, err := InitDBConnect(ctx, cnf, migratesFolder)
+		if err == nil {
+			return dbConnect, nil
+		}
+		log.Error("can't connect to db", err, logger.WithInt("attempt", i))
+		time.Sleep(time.Duration(i) * time.Second * 5)
+	}
+	return nil, fmt.Errorf("can't connect to db")
 }

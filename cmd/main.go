@@ -1,18 +1,18 @@
 package main
 
 import (
+	"context"
 	"flag"
 	"fmt"
 	"go_project_template/internal/config"
 	"go_project_template/internal/logger"
-	samplerRepo "go_project_template/internal/repository/sampler"
+	"go_project_template/internal/repository"
 	"go_project_template/internal/routes"
 	samplerService "go_project_template/internal/service/sampler"
 	"go_project_template/internal/storage/database"
 	"os"
 	"os/signal"
 	"syscall"
-	"time"
 )
 
 var (
@@ -29,9 +29,10 @@ func main() {
 	if err != nil {
 		appLog.Fatal("unable to init config", err, logger.WithString("config", *confFile))
 	}
+	ctx, cancel := context.WithCancel(context.Background())
 
 	appLog.Info("create storage connections")
-	dbConn, err := getDBConnect(appLog, &appConf.ConfigDB, appConf.MigratesFolder)
+	dbConn, err := database.GetDBConnect(ctx, appLog, &appConf.ConfigDB, appConf.MigratesFolder)
 	if err != nil {
 		appLog.Fatal("unable to connect to db", err, logger.WithString("host", appConf.ConfigDB.Address))
 	}
@@ -42,7 +43,7 @@ func main() {
 	}()
 
 	appLog.Info("init repositories")
-	repo := samplerRepo.InitRepo(dbConn)
+	repo := repository.InitRepo(dbConn)
 
 	appLog.Info("init services")
 	service := samplerService.InitService(appLog, repo)
@@ -64,16 +65,5 @@ func main() {
 	c := make(chan os.Signal, 1)
 	signal.Notify(c, os.Interrupt, syscall.SIGTERM)
 	<-c // This blocks the main thread until an interrupt is received
-}
-
-func getDBConnect(log logger.AppLogger, cnf *config.DBConf, migratesFolder string) (*database.DBConnect, error) {
-	for i := 0; i < 5; i++ {
-		dbConnect, err := database.InitDBConnect(cnf, migratesFolder)
-		if err == nil {
-			return dbConnect, nil
-		}
-		log.Error("can't connect to db", err, logger.WithInt("attempt", i))
-		time.Sleep(time.Duration(i) * time.Second * 5)
-	}
-	return nil, fmt.Errorf("can't connect to db")
+	cancel()
 }

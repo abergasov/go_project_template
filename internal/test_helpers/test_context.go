@@ -1,13 +1,15 @@
 package testhelpers
 
 import (
+	"context"
 	"fmt"
 	"go_project_template/internal/config"
 	"go_project_template/internal/logger"
-	"go_project_template/internal/repository/sampler"
+	"go_project_template/internal/repository"
 	samplerService "go_project_template/internal/service/sampler"
 	"go_project_template/internal/storage/database"
 	"os"
+	"time"
 
 	"strings"
 	"testing"
@@ -17,33 +19,44 @@ import (
 )
 
 type TestContainer struct {
+	Ctx context.Context
+
+	Logger logger.AppLogger
+
+	Repo *repository.Repo
+
 	ServiceSampler *samplerService.Service
 }
 
 func GetClean(t *testing.T) *TestContainer {
+	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Minute)
 	conf := getTestConfig()
-	prepareTestDB(t, &conf.ConfigDB)
+	prepareTestDB(ctx, t, &conf.ConfigDB)
 
-	dbConnect, err := database.InitDBConnect(&conf.ConfigDB, guessMigrationDir(t))
+	dbConnect, err := database.InitDBConnect(ctx, &conf.ConfigDB, guessMigrationDir(t))
 	require.NoError(t, err)
 	cleanupDB(t, dbConnect)
 	t.Cleanup(func() {
+		cancel()
 		require.NoError(t, dbConnect.Client().Close())
 	})
 
 	appLog := logger.NewAppSLogger("test")
 	// repo init
-	repo := sampler.InitRepo(dbConnect)
+	repo := repository.InitRepo(dbConnect)
 
 	// service init
 	serviceSampler := samplerService.InitService(appLog, repo)
 	return &TestContainer{
+		Ctx:            ctx,
+		Logger:         appLog,
+		Repo:           repo,
 		ServiceSampler: serviceSampler,
 	}
 }
 
-func prepareTestDB(t *testing.T, cnf *config.DBConf) {
-	dbConnect, err := database.InitDBConnect(&config.DBConf{
+func prepareTestDB(ctx context.Context, t *testing.T, cnf *config.DBConf) {
+	dbConnect, err := database.InitDBConnect(ctx, &config.DBConf{
 		Address:        cnf.Address,
 		Port:           cnf.Port,
 		User:           cnf.User,
