@@ -2,18 +2,17 @@ package sampler
 
 import (
 	"go_project_template/internal/logger"
-	"go_project_template/internal/repository/sampler"
-	"log/slog"
+	"go_project_template/internal/repository"
 )
 
 type Service struct {
 	log  logger.AppLogger
-	repo *sampler.Repo
+	repo *repository.Repo
 }
 
-func InitService(log logger.AppLogger, repo *sampler.Repo) *Service {
+func InitService(log logger.AppLogger, repo *repository.Repo) *Service {
 	return &Service{
 		repo: repo,
-		log:  log.With(slog.String("service", "sampler")),
+		log:  log.With(logger.WithService("sampler")),
 	}
 }

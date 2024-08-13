@@ -9,10 +9,9 @@ import (
 	samplerService "go_project_template/internal/service/sampler"
 	"go_project_template/internal/storage/database"
 	"os"
-	"time"
-
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/lib/pq"
 	"github.com/stretchr/testify/require"
@@ -110,8 +109,7 @@ func guessMigrationDir(t *testing.T) string {
 }
 
 func cleanupDB(t *testing.T, connector database.DBConnector) {
-	tables := []string{"sampler"}
-	for _, table := range tables {
+	for _, table := range repository.AllTables {
 		_, err := connector.Client().Exec(fmt.Sprintf("TRUNCATE %s CASCADE", table))
 		require.NoError(t, err)
 	}
