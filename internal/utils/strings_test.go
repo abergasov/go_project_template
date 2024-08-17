@@ -19,3 +19,16 @@ func TestCleanString(t *testing.T) {
 		require.Equal(t, res, utils.CleanString(src))
 	}
 }
+
+func TestGetFirstValidString(t *testing.T) {
+	table := map[string][]string{
+		"":  {},
+		"a": {"a"},
+		"b": {"b", "a"},
+		"c": {"", "c", "b", "a"},
+		"d": {"", " ", "  ", "d"},
+	}
+	for expected, params := range table {
+		require.Equal(t, expected, utils.GetFirstValidString(params...))
+	}
+}
