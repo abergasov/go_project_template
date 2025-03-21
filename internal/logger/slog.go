@@ -4,6 +4,7 @@ import (
 	"io"
 	"log/slog"
 	"os"
+	"runtime/debug"
 	"strings"
 	"sync"
 	"time"
@@ -19,6 +20,19 @@ func NewAppSLogger(appHash string, args ...StringWith) AppLogger {
 	return InitLogger([]io.Writer{
 		os.Stdout,
 	}, appHash, args...)
+}
+
+func getLastCommitHash() string {
+	info, ok := debug.ReadBuildInfo()
+	if !ok {
+		return ""
+	}
+	data := strings.Split(strings.ReplaceAll(info.Main.Version, "+dirty", ""), "-")
+	res := data[len(data)-1]
+	if len(res) > 7 {
+		return res[:7]
+	}
+	return res
 }
 
 func InitLogger(writers []io.Writer, appHash string, args ...StringWith) AppLogger {
@@ -45,6 +59,10 @@ func InitLogger(writers []io.Writer, appHash string, args ...StringWith) AppLogg
 		}
 		for _, arg := range args {
 			attrs = append(attrs, slog.String(arg.Key, arg.Val))
+		}
+
+		if commitHash := getLastCommitHash(); commitHash != "" {
+			attrs = append(attrs, slog.String("commit", commitHash))
 		}
 
 		lw := slog.New(handler).With(attrs...)
