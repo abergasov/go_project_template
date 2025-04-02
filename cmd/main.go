@@ -17,12 +17,11 @@ import (
 
 var (
 	confFile = flag.String("config", "configs/app_conf.yml", "Configs file path")
-	appHash  = os.Getenv("GIT_HASH")
 )
 
 func main() {
 	flag.Parse()
-	appLog := logger.NewAppSLogger(appHash)
+	appLog := logger.NewAppSLogger()
 
 	appLog.Info("app starting", logger.WithString("conf", *confFile))
 	appConf, err := config.InitConf(*confFile)
@@ -46,7 +45,7 @@ func main() {
 	repo := repository.InitRepo(dbConn)
 
 	appLog.Info("init services")
-	service := samplerService.InitService(appLog, repo)
+	service := samplerService.InitService(ctx, appLog, repo)
 
 	appLog.Info("init http service")
 	appHTTPServer := routes.InitAppRouter(appLog, service, fmt.Sprintf(":%d", appConf.AppPort))

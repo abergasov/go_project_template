@@ -30,59 +30,70 @@ func (r *TestResponse) RequireUnmarshal(t *testing.T, dst interface{}) {
 	require.NoError(t, err)
 }
 
-func (r *TestResponse) RequireStatus(t *testing.T, status int) {
+func (r *TestResponse) RequireStatus(t *testing.T, status int) *TestResponse {
 	t.Helper()
 	require.NotNil(t, r.Res, "response is nil")
 	require.Equal(t, status, r.Res.StatusCode, "invalid response status code")
+	return r
 }
 
-func (r *TestResponse) RequireOk(t *testing.T) {
+func (r *TestResponse) RequireOk(t *testing.T) *TestResponse {
 	t.Helper()
 	r.RequireStatus(t, http.StatusOK)
+	return r
 }
 
-func (r *TestResponse) RequireCreated(t *testing.T) {
+func (r *TestResponse) RequireCreated(t *testing.T) *TestResponse {
 	t.Helper()
 	r.RequireStatus(t, http.StatusCreated)
+	return r
 }
 
-func (r *TestResponse) RequireNoContent(t *testing.T) {
+func (r *TestResponse) RequireNoContent(t *testing.T) *TestResponse {
 	t.Helper()
 	r.RequireStatus(t, http.StatusNoContent)
+	return r
 }
 
-func (r *TestResponse) RequireUnauthorized(t *testing.T) {
+func (r *TestResponse) RequireUnauthorized(t *testing.T) *TestResponse {
 	t.Helper()
 	r.RequireStatus(t, http.StatusUnauthorized)
+	return r
 }
 
-func (r *TestResponse) RequireForbidden(t *testing.T) {
+func (r *TestResponse) RequireForbidden(t *testing.T) *TestResponse {
 	t.Helper()
 	r.RequireStatus(t, http.StatusForbidden)
+	return r
 }
 
-func (r *TestResponse) RequireConflict(t *testing.T) {
+func (r *TestResponse) RequireConflict(t *testing.T) *TestResponse {
 	t.Helper()
 	r.RequireStatus(t, http.StatusConflict)
+	return r
 }
 
-func (r *TestResponse) RequireBadRequest(t *testing.T) {
+func (r *TestResponse) RequireBadRequest(t *testing.T) *TestResponse {
 	t.Helper()
 	r.RequireStatus(t, http.StatusBadRequest)
+	return r
 }
 
-func (r *TestResponse) RequireNotFound(t *testing.T) {
+func (r *TestResponse) RequireNotFound(t *testing.T) *TestResponse {
 	t.Helper()
 	r.RequireStatus(t, http.StatusNotFound)
+	return r
 }
 
-func (r *TestResponse) RequireRedirect(t *testing.T, path string) {
+func (r *TestResponse) RequireRedirect(t *testing.T, path string) *TestResponse {
 	t.Helper()
 	r.RequireStatus(t, http.StatusFound)
 	require.Equal(t, path, r.Res.Header.Get("Location"), "wrong redirect location")
+	return r
 }
 
-func (r *TestResponse) RequireServerError(t *testing.T) {
+func (r *TestResponse) RequireServerError(t *testing.T) *TestResponse {
 	t.Helper()
 	r.RequireStatus(t, http.StatusInternalServerError)
+	return r
 }

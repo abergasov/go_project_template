@@ -16,10 +16,10 @@ type SLogger struct {
 
 var _ AppLogger = (*SLogger)(nil)
 
-func NewAppSLogger(appHash string, args ...StringWith) AppLogger {
+func NewAppSLogger(args ...StringWith) AppLogger {
 	return InitLogger([]io.Writer{
 		os.Stdout,
-	}, appHash, args...)
+	}, args...)
 }
 
 func getLastCommitHash() string {
@@ -35,7 +35,7 @@ func getLastCommitHash() string {
 	return res
 }
 
-func InitLogger(writers []io.Writer, appHash string, args ...StringWith) AppLogger {
+func InitLogger(writers []io.Writer, args ...StringWith) AppLogger {
 	logs := make([]*slog.Logger, 0, len(writers))
 	for _, w := range writers {
 		handler := slog.NewJSONHandler(w, &slog.HandlerOptions{
@@ -54,9 +54,6 @@ func InitLogger(writers []io.Writer, appHash string, args ...StringWith) AppLogg
 			},
 		})
 		attrs := make([]any, 0, len(args)+1)
-		if appHash != "" && len(appHash) > 6 {
-			attrs = append(attrs, slog.String("version", appHash[:6]))
-		}
 		for _, arg := range args {
 			attrs = append(attrs, slog.String(arg.Key, arg.Val))
 		}

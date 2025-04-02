@@ -1,5 +1,4 @@
-FROM golang:1.21 AS build
-RUN echo "Based on commit: $GIT_HASH"
+FROM golang:1.24 AS build
 
 # All these steps will be cached
 RUN mkdir /app

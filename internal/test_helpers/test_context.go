@@ -18,8 +18,8 @@ import (
 )
 
 type TestContainer struct {
-	Ctx context.Context
-
+	Ctx    context.Context
+	Cfg    *config.AppConfig
 	Logger logger.AppLogger
 
 	Repo *repository.Repo
@@ -40,14 +40,15 @@ func GetClean(t *testing.T) *TestContainer {
 		require.NoError(t, dbConnect.Client().Close())
 	})
 
-	appLog := logger.NewAppSLogger("test")
+	appLog := logger.NewAppSLogger()
 	// repo init
 	repo := repository.InitRepo(dbConnect)
 
 	// service init
-	serviceSampler := samplerService.InitService(appLog, repo)
+	serviceSampler := samplerService.InitService(ctx, appLog, repo)
 	return &TestContainer{
 		Ctx:            ctx,
+		Cfg:            conf,
 		Logger:         appLog,
 		Repo:           repo,
 		ServiceSampler: serviceSampler,

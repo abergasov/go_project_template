@@ -52,7 +52,7 @@ func Test_DefaultLogger(t *testing.T) {
 		}()
 		go func() {
 			defer wg.Done()
-			defaultAppLog := logger.NewAppSLogger("test_2")
+			defaultAppLog := logger.NewAppSLogger()
 			concurrentlyLogIt(
 				defaultAppLog.With(
 					logger.WithString("a", "b"),
@@ -73,7 +73,6 @@ func Test_SLogger_multiply_writers(t *testing.T) {
 
 	t.Run("pure check", func(t *testing.T) {
 		l := logger.NewAppSLogger(
-			"test_2",
 			logger.WithString("additional", "value"),
 			logger.WithString("additional2", "value"),
 		)
@@ -150,5 +149,5 @@ func newTestLogger(t testing.TB) logger.AppLogger {
 			print(tl.logs.String())
 		}
 	})
-	return logger.InitLogger([]io.Writer{tl}, "test")
+	return logger.InitLogger([]io.Writer{tl})
 }

@@ -13,12 +13,11 @@ services:
       args:
         CONF_PATH: configs/app_conf_docker.yml
     restart: always
-    environment:
-      GIT_HASH: $GIT_HASH
     ports:
-      - 8000:8000
+      - "8000:8000"
     depends_on:
-      - dbPostgres
+      dbPostgres:
+        condition: service_healthy
     networks:
       - app-network
     command: [ "/app/binary", "--config", "configs/app_conf_docker.yml" ]
@@ -31,8 +30,8 @@ services:
       - nf_volume_data:/data
       - nf_conf_data:/conf/
     ports:
-      - 7474:7474
-      - 7687:7687
+      - "7474:7474"
+      - "7687:7687"
     networks:
       - app-network
     restart: on-failure
