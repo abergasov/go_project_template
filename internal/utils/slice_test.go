@@ -156,3 +156,12 @@ func TestStringsFromObjectSlice(t *testing.T) {
 		t.Errorf("Expected %v, but got %v", expected, result)
 	}
 }
+
+func TestExcludeFromSlice(t *testing.T) {
+	src := []string{"a", "b", "c", "d", "e"}
+	exclude := []string{"b", "d"}
+	require.Equal(t, []string{"a", "c", "e"}, utils.ExcludeFromSlice(src, exclude))
+
+	src = []string{"a", "", "", "c"}
+	require.Equal(t, []string{"a", "c"}, utils.ExcludeFromSlice(src, []string{""}))
+}

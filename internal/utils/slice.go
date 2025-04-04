@@ -1,9 +1,8 @@
 package utils
 
 import (
-	"sort"
-
 	"golang.org/x/exp/constraints"
+	"sort"
 )
 
 // ContainsInSlice checks if slice contains value
@@ -97,6 +96,18 @@ func StringsFromObjectSlice[T any](src []T, extractor func(T) string) []string {
 	result := make([]string, 0, len(src))
 	for key := range src {
 		result = append(result, extractor(src[key]))
+	}
+	return result
+}
+
+// ExcludeFromSlice returns a new slice with all values from excludeValues removed from slice
+// not optimized for performance
+func ExcludeFromSlice[T comparable](slice, excludeValues []T) []T {
+	result := make([]T, 0, len(slice))
+	for _, entry := range slice {
+		if !ContainsInSlice(excludeValues, entry) {
+			result = append(result, entry)
+		}
 	}
 	return result
 }
