@@ -9,7 +9,6 @@ import (
 	"net/http"
 	"testing"
 
-	"github.com/phayes/freeport"
 	"github.com/stretchr/testify/require"
 )
 
@@ -20,8 +19,7 @@ type TestServer struct {
 }
 
 func NewTestServer(t *testing.T, container *TestContainer) *TestServer {
-	appPort, err := freeport.GetFreePort()
-	require.NoError(t, err, "failed to get free port for app")
+	appPort := GetFreePort(t)
 	srv := &TestServer{
 		appPort: appPort,
 		client:  *http.DefaultClient,
