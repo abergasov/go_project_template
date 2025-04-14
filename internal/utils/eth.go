@@ -2,42 +2,53 @@ package utils
 
 import (
 	"math/big"
-
-	"github.com/shopspring/decimal"
 )
 
 func WeiFromETHString(eth string) *big.Int {
-	amount, _ := decimal.NewFromString(eth)
-	mul := decimal.NewFromFloat(float64(10)).Pow(decimal.NewFromFloat(18))
-	return amount.Mul(mul).BigInt()
+	ethFloat, _ := new(big.Float).SetString(eth)
+	amount, _ := ethFloat.Mul(ethFloat, new(big.Float).SetInt(new(big.Int).Exp(big.NewInt(10), big.NewInt(18), nil))).Int(nil)
+	return amount
 }
 
 func GWeiFromETHString(eth string) *big.Int {
-	amount, _ := decimal.NewFromString(eth)
-	mul := decimal.NewFromFloat(float64(10)).Pow(decimal.NewFromFloat(9))
-	return amount.Mul(mul).BigInt()
+	amount, _, err := big.ParseFloat(eth, 10, 256, big.ToNearestEven)
+	if err != nil {
+		return nil
+	}
+
+	multiplier := new(big.Float).SetInt(big.NewInt(1_000_000_000))
+	result := new(big.Float).Mul(amount, multiplier)
+
+	gwei := new(big.Int)
+	result.Int(gwei)
+	return gwei
 }
 
 func ETHFromWei(wei *big.Int) string {
-	amount := decimal.NewFromBigInt(wei, 0)
-	mul := decimal.NewFromFloat(float64(10)).Pow(decimal.NewFromFloat(18))
-	return amount.Div(mul).String()
+	return new(big.Float).Quo(new(big.Float).SetInt(wei), new(big.Float).SetInt(new(big.Int).Exp(big.NewInt(10), big.NewInt(18), nil))).String()
 }
 
-func ETHFromGWei(wei *big.Int) string {
-	amount := decimal.NewFromBigInt(wei, 0)
-	mul := decimal.NewFromFloat(float64(10)).Pow(decimal.NewFromFloat(9))
-	return amount.Div(mul).String()
+func ETHFromGWei(gwei *big.Int) string {
+	amount := new(big.Float).SetInt(gwei)
+	divisor := new(big.Float).SetInt(big.NewInt(1_000_000_000))
+	result := new(big.Float).Quo(amount, divisor)
+	return result.Text('f', -1)
 }
 
 func CustomFromWei(wei *big.Int, decimals int) string {
-	amount := decimal.NewFromBigInt(wei, 0)
-	mul := decimal.NewFromFloat(float64(10)).Pow(decimal.NewFromFloat(float64(decimals)))
-	return amount.Div(mul).String()
+	amount := new(big.Float).SetInt(wei)
+	divisor := new(big.Float).SetFloat64(1)
+	divisor.Quo(divisor, new(big.Float).SetFloat64(1).SetPrec(256).SetFloat64(float64(10)).SetPrec(256).SetInt(new(big.Int).Exp(big.NewInt(10), big.NewInt(int64(decimals)), nil)))
+	dec := new(big.Float).Quo(amount, new(big.Float).SetInt(new(big.Int).Exp(big.NewInt(10), big.NewInt(int64(decimals)), nil)))
+	return dec.Text('f', decimals)
 }
 
 func CustomToWei(amount float64, decimals int) *big.Int {
-	amountDecimal := decimal.NewFromFloat(amount)
-	mul := decimal.NewFromFloat(float64(10)).Pow(decimal.NewFromFloat(float64(decimals)))
-	return amountDecimal.Mul(mul).BigInt()
+	amountFloat := new(big.Float).SetFloat64(amount)
+	exp := new(big.Int).Exp(big.NewInt(10), big.NewInt(int64(decimals)), nil)
+	expFloat := new(big.Float).SetInt(exp)
+	result := new(big.Float).Mul(amountFloat, expFloat)
+	wei := new(big.Int)
+	result.Int(wei)
+	return wei
 }
