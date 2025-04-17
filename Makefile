@@ -62,9 +62,10 @@ stop: ## Stops the local environment
 	docker compose down
 
 dev_up_ci: stop ## Runs local environment for ci
-	${info Running docker-compose up...}
+	@echo "-- copying configs"
 	cp configs/sample.common.env configs/common.env
-	GIT_HASH=${FILE_HASH} docker compose -p ${PROJECT_NAME} up --build dbPostgres
+	@echo "-- setting up docker-compose"
+	GIT_HASH=${FILE_HASH} docker compose -p ${PROJECT_NAME} up --build dbPostgres -d
 
 dev_up: stop ## Runs local environment
 	${info Running docker-compose up...}
