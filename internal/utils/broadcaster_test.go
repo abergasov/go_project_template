@@ -59,20 +59,23 @@ func TestBroadcasterBroadcast(t *testing.T) {
 			}
 		}()
 
-		for _, expected := range messages {
-			select {
-			case m := <-chBr1:
-				require.Equalf(t, expected, m, "listener l1: expected %s, got %s", expected, m)
-			case <-time.After(100 * time.Millisecond):
-				t.Errorf("listener l1 did not receive message %s", expected)
+		fetchedCh1 := make([]string, 0, len(messages))
+		fetchedCh2 := make([]string, 0, len(messages))
+		go func() {
+			for m := range chBr1 {
+				fetchedCh1 = append(fetchedCh1, m)
 			}
-			select {
-			case m := <-chBr2:
-				require.Equalf(t, expected, m, "listener l2: expected %s, got %s", expected, m)
-			case <-time.After(100 * time.Millisecond):
-				t.Errorf("listener l2 did not receive message %s", expected)
+		}()
+		go func() {
+			for m := range chBr2 {
+				fetchedCh2 = append(fetchedCh2, m)
 			}
-		}
+		}()
+		<-time.After(100 * time.Millisecond)
+		require.Equal(t, len(messages), len(fetchedCh1), "listener l1: expected %d messages, got %d", len(messages), len(fetchedCh1))
+		require.Equal(t, len(messages), len(fetchedCh2), "listener l2: expected %d messages, got %d", len(messages), len(fetchedCh2))
+		require.Equal(t, messages, fetchedCh1, "listener l1: expected %s, got %s", messages, fetchedCh1)
+		require.Equal(t, messages, fetchedCh2, "listener l2: expected %s, got %s", messages, fetchedCh2)
 	})
 	t.Run("check no listeners", func(t *testing.T) {
 		br := utils.NewBroadcaster[int]()
