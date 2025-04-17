@@ -77,7 +77,6 @@ func TestBroadcasterBroadcast(t *testing.T) {
 				f2Mutex.Unlock()
 			}
 		}()
-		<-time.After(100 * time.Millisecond)
 		require.Eventually(t, func() bool {
 			valid1 := false
 			f1Mutex.Lock()
@@ -88,7 +87,7 @@ func TestBroadcasterBroadcast(t *testing.T) {
 			valid2 = len(fetchedCh2) == len(messages)
 			f2Mutex.Unlock()
 			return valid1 && valid2
-		}, 10*time.Millisecond, 1*time.Second, "expected all messages to be received")
+		}, 10*time.Second, 1*time.Second, "expected all messages to be received")
 		require.Equal(t, messages, fetchedCh1, "listener l1: expected %s, got %s", messages, fetchedCh1)
 		require.Equal(t, messages, fetchedCh2, "listener l2: expected %s, got %s", messages, fetchedCh2)
 	})
