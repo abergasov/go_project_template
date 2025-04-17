@@ -13,7 +13,7 @@ import (
 )
 
 func TestService_Swap1Inch(t *testing.T) {
-	appLog := logger.NewAppSLogger("")
+	appLog := logger.NewAppSLogger()
 	erc20Approver := approver.InitService(appLog)
 	service := swapper.NewService(appLog, erc20Approver)
 	ethClient, privateKey, address := initTest(t)

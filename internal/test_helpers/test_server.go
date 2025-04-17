@@ -30,7 +30,7 @@ func NewTestServer(t *testing.T, container *TestContainer) *TestServer {
 	t.Cleanup(func() {
 		require.NoError(t, appHTTPServer.Stop())
 	})
-	go appHTTPServer.Run()
+	go appHTTPServer.Run() //nolint:errcheck // ignore error as we are not interested in it
 	return srv
 }
 

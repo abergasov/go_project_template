@@ -38,6 +38,10 @@ func WithInt64(key string, val int64) StringWith {
 	return StringWith{Key: key, Val: strconv.FormatInt(val, 10)}
 }
 
+func WithFloat64(key string, val float64) StringWith {
+	return StringWith{Key: key, Val: strconv.FormatFloat(val, 'f', -1, 64)}
+}
+
 func WithInt(key string, val int) StringWith {
 	return StringWith{Key: key, Val: strconv.FormatInt(int64(val), 10)}
 }
