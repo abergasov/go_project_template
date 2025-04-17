@@ -2,8 +2,8 @@ version: '3'
 
 volumes:
   data_pq_volume:
-  nf_volume_data:
-  nf_conf_data:
+#  nf_volume_data:
+#  nf_conf_data:
 
 services:
   app:
@@ -22,20 +22,20 @@ services:
       - app-network
     command: [ "/app/binary", "--config", "configs/app_conf_docker.yml" ]
 
-  neo4j:
-    image: neo4j:5.3.0
-    env_file:
-      - configs/neo4j.env
-    volumes:
-      - nf_volume_data:/data
-      - nf_conf_data:/conf/
-    ports:
-      - "7474:7474"
-      - "7687:7687"
-    networks:
-      - app-network
-    restart: on-failure
-    command: neo4j
+#  neo4j:
+#    image: neo4j:5.3.0
+#    env_file:
+#      - configs/neo4j.env
+#    volumes:
+#      - nf_volume_data:/data
+#      - nf_conf_data:/conf/
+#    ports:
+#      - "7474:7474"
+#      - "7687:7687"
+#    networks:
+#      - app-network
+#    restart: on-failure
+#    command: neo4j
 
   dbPostgres:
     image: postgres:14.2
