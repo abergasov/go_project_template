@@ -3,24 +3,18 @@ package swapper
 import (
 	"context"
 	"crypto/ecdsa"
-	"encoding/json"
 	"fmt"
+	"go_project_template/internal/logger"
 	"go_project_template/internal/service/web3"
 	"go_project_template/internal/utils"
-	"log/slog"
 	"math/big"
 	"net/http"
 
-	"github.com/shopspring/decimal"
-
-	"github.com/ethereum/go-ethereum/core/types"
-
 	"github.com/ethereum/go-ethereum/common"
-
+	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/ethclient"
+	"github.com/shopspring/decimal"
 )
-
-type inchChain string
 
 type inchResponse struct {
 	FromToken struct {
@@ -58,7 +52,14 @@ type inchResponse struct {
 		Gas      uint64 `json:"gas"`
 		GasPrice string `json:"gasPrice"`
 	} `json:"tx"`
-	EstimatedGas int `json:"estimatedGas"`
+	EstimatedGas int    `json:"estimatedGas"`
+	StatusCode   int    `json:"statusCode"`
+	Error        string `json:"error"`
+	Description  string `json:"description"`
+	Meta         []struct {
+		Type  string `json:"type"`
+		Value string `json:"value"`
+	} `json:"meta"`
 }
 
 const (
@@ -76,9 +77,9 @@ func (s *Service) Swap1Inch(
 	to web3.Coin,
 ) error {
 	log := s.log.With(
-		slog.String("from", string(from)),
-		slog.String("to", string(to)),
-		slog.Float64("amount", swapAmount),
+		logger.WithString("from", string(from)),
+		logger.WithString("to", string(to)),
+		logger.WithFloat64("amount", swapAmount),
 	)
 	log.Info("start 1inch swap")
 	chainID, err := web3Client.ChainID(ctx)
@@ -132,9 +133,9 @@ func (s *Service) Swap1Inch(
 	})
 	log.Info(
 		"run transaction",
-		slog.String("gas tip cap", gasTipCap.String()),
-		slog.String("gas fee cap", gasFeeCap.String()),
-		slog.Uint64("gas limit", res.Tx.Gas),
+		logger.WithString("gas tip cap", gasTipCap.String()),
+		logger.WithString("gas fee cap", gasFeeCap.String()),
+		logger.WithUnt64("gas limit", res.Tx.Gas),
 	)
 	signedTx, err := types.SignTx(broadcastTx, types.LatestSignerForChainID(chainID), privateKey)
 	if err != nil {
@@ -180,49 +181,28 @@ func (s *Service) getInchData(ctx context.Context, chain *big.Int, slippagePerce
 		wallet,
 		slippagePercent,
 	)
-	resp, respCode, err := utils.Get(ctx, url)
+
+	resp, respCode, err := utils.GetCurl[inchResponse](ctx, url, nil)
 	if err != nil {
 		return nil, fmt.Errorf("unable to get 1inch data: %w", err)
 	}
 	if respCode != http.StatusOK {
-		type inchErrorResponse struct {
-			StatusCode  int    `json:"statusCode"`
-			Error       string `json:"error"`
-			Description string `json:"description"`
-			Meta        []struct {
-				Type  string `json:"type"`
-				Value string `json:"value"`
-			} `json:"meta"`
-		}
-		var inchErrResp inchErrorResponse
-		if err = json.Unmarshal(resp, &inchErrResp); err != nil {
-			return nil, fmt.Errorf("failed to unmarshal response body: %d, %w", respCode, err)
-		}
-		return nil, fmt.Errorf("unexpected status code: %d, %s, %s", respCode, inchErrResp.Error, inchErrResp.Description)
+		return nil, fmt.Errorf("unexpected status code: %d, %s, %s", respCode, resp.Error, resp.Description)
 	}
-
-	var inchResp inchResponse
-	if err = json.Unmarshal(resp, &inchResp); err != nil {
-		return nil, fmt.Errorf("failed to unmarshal response body: %w", err)
-	}
-	return &inchResp, nil
+	return resp, nil
 }
 
 func (s *Service) getInchSpender(ctx context.Context, chainID *big.Int) (string, error) {
 	url := fmt.Sprintf("https://api.1inch.io/v%d.0/%s/approve/spender", inchVersion, chainID.String())
-	resp, respCode, err := utils.Get(ctx, url)
+	type inchSpenderResponse struct {
+		Address string `json:"address"`
+	}
+	resp, respCode, err := utils.GetCurl[inchSpenderResponse](ctx, url, nil)
 	if err != nil {
 		return "", fmt.Errorf("unable to get 1inch data: %w", err)
 	}
 	if respCode != http.StatusOK {
 		return "", fmt.Errorf("unexpected status code: %d", respCode)
 	}
-	type inchSpenderResponse struct {
-		Address string `json:"address"`
-	}
-	var inchResp inchSpenderResponse
-	if err = json.Unmarshal(resp, &inchResp); err != nil {
-		return "", fmt.Errorf("failed to unmarshal response body: %w", err)
-	}
-	return inchResp.Address, nil
+	return resp.Address, nil
 }

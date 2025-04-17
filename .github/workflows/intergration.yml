@@ -1,0 +1,82 @@
+name: Integration
+
+env:
+  go-version: "1.24.2"
+  vuln-version: "v1.1.4"
+  RPC_URLS: ${{secrets.RPC_URLS}}
+
+on:
+  push:
+    tags:
+      - v*
+  pull_request:
+    branches:
+      - master
+      - main
+      - '**'
+
+permissions:
+  contents: read
+  # Optional: allow read access to pull request. Use with `only-new-issues` option.
+  # pull-requests: read
+
+jobs:
+  vulncheck:
+    name: vulncheck
+    runs-on: ubuntu-latest
+    steps:
+      - name: checkout
+        uses: actions/checkout@v4
+      - name: set up go
+        uses: actions/setup-go@v5
+        with:
+          go-version: ${{ env.go-version }}
+          cache: true
+      - name: install
+        run: go install golang.org/x/vuln/cmd/govulncheck@${{ env.vuln-version }}
+      - name: govulncheck
+        run: make vulcheck
+
+  golangci:
+    name: lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/setup-go@v5
+        with:
+          go-version: ${{ env.go-version }}
+          cache: true
+      - uses: actions/checkout@v4
+      - name: golangci-lint
+        uses: golangci/golangci-lint-action@v7
+        with:
+          version: v2.0.1
+          args: --timeout 10m
+          only-new-issues: true
+
+  tests:
+    name: tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Check out repository code
+        uses: actions/checkout@v4
+      - name: Start compose
+        run: |
+          make dev_up_ci
+          sleep 10
+      - name: Cache Go modules
+        uses: actions/cache@v3
+        with:
+          path: ~/go/pkg/mod
+          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+          restore-keys: |
+            ${{ runner.os }}-go-
+      - name: Set up go
+        uses: actions/setup-go@v5
+        with:
+          go-version: ${{ env.go-version }}
+          cache: true
+      - name: Run tests
+        run: CI_RUN="true" make test
+      - name: Measure test coverage
+        run: make coverage

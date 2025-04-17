@@ -22,7 +22,7 @@ const (
 )
 
 func TestService_ApproveContractUsage(t *testing.T) {
-	appLog := logger.NewAppSLogger("")
+	appLog := logger.NewAppSLogger()
 	service := approver.InitService(appLog)
 	ethClient, privateKey, accAddress := initTest(t)
 
@@ -43,7 +43,7 @@ func TestService_ApproveContractUsage(t *testing.T) {
 }
 
 func TestService_GetNativeTokenBalance(t *testing.T) {
-	appLog := logger.NewAppSLogger("")
+	appLog := logger.NewAppSLogger()
 	service := approver.InitService(appLog)
 	ethClient, _, accAddress := initTest(t)
 
@@ -55,7 +55,7 @@ func TestService_GetNativeTokenBalance(t *testing.T) {
 }
 
 func TestService_GetERC20TokenBalance(t *testing.T) {
-	appLog := logger.NewAppSLogger("")
+	appLog := logger.NewAppSLogger()
 	service := approver.InitService(appLog)
 	ethClient, _, accAddress := initTest(t)
 
@@ -72,7 +72,7 @@ func TestService_GetERC20TokenBalance(t *testing.T) {
 }
 
 func TestService_GetContractData(t *testing.T) {
-	appLog := logger.NewAppSLogger("")
+	appLog := logger.NewAppSLogger()
 	service := approver.InitService(appLog)
 	ethClient, _, _ := initTest(t)
 	chainID, err := ethClient.ChainID(context.Background())
@@ -97,7 +97,6 @@ func initTest(t *testing.T) (*ethclient.Client, *ecdsa.PrivateKey, common.Addres
 	require.NoError(t, err)
 	t.Cleanup(func() {
 		client.Close()
-
 	})
 	walletPK := os.Getenv("PRIVATE_KEY")
 	if walletPK == "" {

@@ -1,89 +1,76 @@
-linters-settings:
-  govet:
-    check-shadowing: true
-    settings:
-      printf:
-        funcs:
-          - (github.com/golangci/golangci-lint/pkg/logutils.Log).Infof
-          - (github.com/golangci/golangci-lint/pkg/logutils.Log).Warnf
-          - (github.com/golangci/golangci-lint/pkg/logutils.Log).Errorf
-          - (github.com/golangci/golangci-lint/pkg/logutils.Log).Fatalf
-  golint:
-    min-confidence: 0
-  gocyclo:
-    min-complexity: 15
-  maligned:
-    suggest-new: true
-  dupl:
-    threshold: 100
-  goconst:
-    min-len: 2
-    min-occurrences: 5
-  depguard:
-    rules:
-      main:
-        files:
-          - "**/*.go"
-        deny:
-          - pkg: "github.com/sirupsen/logrus"
-            desc: not allowed
-          - pkg: "github.com/pkg/errors"
-            desc: deprecated, should be replaced by standard lib errors package
-  misspell:
-    locale: US
-  goimports:
-    local-prefixes: github.com/golangci/golangci-lint
-  gocritic:
-    enabled-tags:
-      - diagnostic
-      - experimental
-      - opinionated
-      - performance
-      - style
-    disabled-checks:
-      - wrapperFunc
-      - dupImport # https://github.com/go-critic/go-critic/issues/845
-      - ifElseChain
-      - octalLiteral
-      - whyNoLint
-  funlen:
-    lines: 300
-    statements: 200
-
-issues:
-  exclude-rules:
-    - path: _test\.go
-      linters:
-        - dupl
-        - gosec
+version: "2"
+run:
+  tests: true
+  allow-parallel-runners: true
 
 linters:
-  disable-all: true
   enable:
     - bodyclose
+    - copyloopvar
     - depguard
     - dogsled
     - dupl
     - errcheck
+    - errorlint
     - funlen
     - goconst
     - gocritic
-    - gofmt
-    - goimports
     - gosec
-    - gosimple
     - govet
     - ineffassign
     - misspell
     - nakedret
+    - nolintlint
+    - prealloc
+    - sqlclosecheck
     - staticcheck
-    - stylecheck
-    - typecheck
     - unconvert
     - unparam
     - unused
     - whitespace
-    - prealloc
-
-service:
-  golangci-lint-version: 1.51.x # use the fixed version to not introduce new linters unexpectedly
+  settings:
+    depguard:
+      rules:
+        main:
+          list-mode: lax
+          files:
+            - '**/*.go'
+          deny:
+            - pkg: github.com/sirupsen/logrus
+              desc: not allowed
+            - pkg: github.com/pkg/errors
+              desc: deprecated, should be replaced by standard lib errors package
+    gocyclo:
+      min-complexity: 15
+    staticcheck:
+      checks:
+        - all
+        - -ST1000
+        - -ST1003
+    dupl:
+      threshold: 100
+    goconst:
+      min-len: 2
+      min-occurrences: 5
+    misspell:
+      locale: US
+    gocritic:
+      enabled-tags:
+        - diagnostic
+        - experimental
+        - opinionated
+        - performance
+        - style
+      disabled-checks:
+        - wrapperFunc
+        - dupImport # https://github.com/go-critic/go-critic/issues/845
+        - ifElseChain
+        - octalLiteral
+        - whyNoLint
+    funlen:
+      lines: 300
+      statements: 200
+  exclusions:
+    paths:
+      - .*_mock\.go$
+      - swagger\/*

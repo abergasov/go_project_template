@@ -2,16 +2,16 @@ package database
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"go_project_template/internal/config"
 	"go_project_template/internal/logger"
 	"time"
 
-	"github.com/jmoiron/sqlx"
-
 	"github.com/golang-migrate/migrate/v4"
 	"github.com/golang-migrate/migrate/v4/database/postgres"
 	_ "github.com/golang-migrate/migrate/v4/source/file"
+	"github.com/jmoiron/sqlx"
 	_ "github.com/lib/pq"
 )
 
@@ -42,7 +42,7 @@ func InitDBConnect(ctx context.Context, cnf *config.DBConf, migratesFolder strin
 	}
 	conn := &DBConnect{db}
 	if migratesFolder != "" {
-		if err = conn.migrate(migratesFolder); err != nil && err != migrate.ErrNoChange {
+		if err = conn.migrate(migratesFolder); err != nil && !errors.Is(err, migrate.ErrNoChange) {
 			return nil, fmt.Errorf("error migrate db: %w", err)
 		}
 	}

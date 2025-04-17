@@ -27,13 +27,14 @@ func TestGenerateInsertSQL(t *testing.T) {
 		"count": 1,
 	})
 	require.Len(t, params, 2)
-	if result == "INSERT INTO fruits (name, count) VALUES ($1, $2)" {
+	switch result {
+	case "INSERT INTO fruits (name, count) VALUES ($1, $2)":
 		require.Equal(t, "amount", params[0])
 		require.Equal(t, 1, params[1])
-	} else if result == "INSERT INTO fruits (count, name) VALUES ($1, $2)" {
+	case "INSERT INTO fruits (count, name) VALUES ($1, $2)":
 		require.Equal(t, "amount", params[1])
 		require.Equal(t, 1, params[0])
-	} else {
+	default:
 		t.Errorf("unexpected result: %s", result)
 	}
 }

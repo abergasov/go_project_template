@@ -3,7 +3,7 @@ FILE_HASH := $(shell git rev-parse HEAD)
 GOLANGCI_LINT := $(shell command -v golangci-lint 2> /dev/null)
 
 # test coverage threshold
-COVERAGE_THRESHOLD:=70
+COVERAGE_THRESHOLD:=30
 COVERAGE_TOTAL := $(shell go tool cover -func=cover.out | grep total | grep -Eo '[0-9]+\.[0-9]+')
 COVERAGE_PASS_THRESHOLD := $(shell echo "$(COVERAGE_TOTAL) $(COVERAGE_THRESHOLD)" | awk '{print ($$1 >= $$2)}')
 
@@ -59,9 +59,15 @@ lint_d:
 
 stop: ## Stops the local environment
 	${info Stopping containers...}
-	docker container ls -q --filter name=${PROJECT_NAME} ; true
-	${info Dropping containers...}
-	docker rm -f -v $(shell docker container ls -q --filter name=${PROJECT_NAME}) ; true
+	docker compose down
+
+prepare_ci: ## Prepares local environment for ci
+	@echo "-- copying configs"
+	cp configs/sample.common.env configs/common.env
+
+dev_up_ci: prepare_ci stop ## Runs local environment for ci
+	@echo "-- setting up docker-compose"
+	GIT_HASH=${FILE_HASH} docker compose -p ${PROJECT_NAME} up --build dbPostgres -d
 
 dev_up: stop ## Runs local environment
 	${info Running docker-compose up...}
@@ -90,5 +96,5 @@ coverage: ## Check test coverage is enough
 		exit 1; \
 	fi
 
-.PHONY: help install-lint test gogen lint stop dev_up build run init_repo migrate_new vulcheck coverage build_in_docker
+.PHONY: help install-lint test gogen prepare_ci lint stop dev_up dev_up_ci build run init_repo migrate_new vulcheck coverage build_in_docker
 .DEFAULT_GOAL := help

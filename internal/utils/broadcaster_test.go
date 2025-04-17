@@ -59,20 +59,37 @@ func TestBroadcasterBroadcast(t *testing.T) {
 			}
 		}()
 
-		for _, expected := range messages {
-			select {
-			case m := <-chBr1:
-				require.Equalf(t, expected, m, "listener l1: expected %s, got %s", expected, m)
-			case <-time.After(100 * time.Millisecond):
-				t.Errorf("listener l1 did not receive message %s", expected)
+		fetchedCh1 := make([]string, 0, len(messages))
+		f1Mutex := sync.Mutex{}
+		fetchedCh2 := make([]string, 0, len(messages))
+		f2Mutex := sync.Mutex{}
+		go func() {
+			for m := range chBr1 {
+				f1Mutex.Lock()
+				fetchedCh1 = append(fetchedCh1, m)
+				f1Mutex.Unlock()
 			}
-			select {
-			case m := <-chBr2:
-				require.Equalf(t, expected, m, "listener l2: expected %s, got %s", expected, m)
-			case <-time.After(100 * time.Millisecond):
-				t.Errorf("listener l2 did not receive message %s", expected)
+		}()
+		go func() {
+			for m := range chBr2 {
+				f2Mutex.Lock()
+				fetchedCh2 = append(fetchedCh2, m)
+				f2Mutex.Unlock()
 			}
-		}
+		}()
+		require.Eventually(t, func() bool {
+			valid1 := false
+			f1Mutex.Lock()
+			valid1 = len(fetchedCh1) == len(messages)
+			f1Mutex.Unlock()
+			valid2 := false
+			f2Mutex.Lock()
+			valid2 = len(fetchedCh2) == len(messages)
+			f2Mutex.Unlock()
+			return valid1 && valid2
+		}, 10*time.Second, 1*time.Second, "expected all messages to be received")
+		require.Equal(t, messages, fetchedCh1, "listener l1: expected %s, got %s", messages, fetchedCh1)
+		require.Equal(t, messages, fetchedCh2, "listener l2: expected %s, got %s", messages, fetchedCh2)
 	})
 	t.Run("check no listeners", func(t *testing.T) {
 		br := utils.NewBroadcaster[int]()

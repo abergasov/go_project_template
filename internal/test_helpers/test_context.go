@@ -2,6 +2,7 @@ package testhelpers
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"go_project_template/internal/config"
 	"go_project_template/internal/logger"
@@ -95,7 +96,8 @@ func checkSQLError(err error, code string) bool {
 	if err == nil {
 		return false
 	}
-	pqErr, ok := err.(*pq.Error)
+	var pqErr *pq.Error
+	ok := errors.As(err, &pqErr)
 	if !ok {
 		return false
 	}

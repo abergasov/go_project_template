@@ -87,8 +87,7 @@ func (r *FuncRepeater[T]) Run() (res T, err error) {
 				err = ErrorRepeatableFuncResNil
 				continue
 			}
-
-			return
+			return //nolint:nakedret // it's ok to return here
 		}
 	}
 }

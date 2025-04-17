@@ -107,7 +107,6 @@ func concurrentlyLogIt(appLog logger.AppLogger) {
 }
 
 type TestLogger struct {
-	logsS      [][]byte
 	logs       bytes.Buffer
 	std        io.Writer
 	logsChan   chan []byte
