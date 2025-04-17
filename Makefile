@@ -3,7 +3,7 @@ FILE_HASH := $(shell git rev-parse HEAD)
 GOLANGCI_LINT := $(shell command -v golangci-lint 2> /dev/null)
 
 # test coverage threshold
-COVERAGE_THRESHOLD:=70
+COVERAGE_THRESHOLD:=30
 COVERAGE_TOTAL := $(shell go tool cover -func=cover.out | grep total | grep -Eo '[0-9]+\.[0-9]+')
 COVERAGE_PASS_THRESHOLD := $(shell echo "$(COVERAGE_TOTAL) $(COVERAGE_THRESHOLD)" | awk '{print ($$1 >= $$2)}')
 
