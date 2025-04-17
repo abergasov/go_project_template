@@ -60,6 +60,10 @@ jobs:
     steps:
       - name: Check out repository code
         uses: actions/checkout@v4
+      - name: Start compose
+        run: |
+          make dev_up_ci
+          sleep 10
       - name: Cache Go modules
         uses: actions/cache@v3
         with:

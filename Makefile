@@ -59,9 +59,11 @@ lint_d:
 
 stop: ## Stops the local environment
 	${info Stopping containers...}
-	docker container ls -q --filter name=${PROJECT_NAME} ; true
-	${info Dropping containers...}
-	docker rm -f -v $(shell docker container ls -q --filter name=${PROJECT_NAME}) ; true
+	docker compose down
+
+dev_up_ci: stop ## Runs local environment for ci
+	${info Running docker-compose up...}
+	GIT_HASH=${FILE_HASH} docker compose -p ${PROJECT_NAME} up --build dbPostgres
 
 dev_up: stop ## Runs local environment
 	${info Running docker-compose up...}
@@ -90,5 +92,5 @@ coverage: ## Check test coverage is enough
 		exit 1; \
 	fi
 
-.PHONY: help install-lint test gogen lint stop dev_up build run init_repo migrate_new vulcheck coverage build_in_docker
+.PHONY: help install-lint test gogen lint stop dev_up dev_up_ci build run init_repo migrate_new vulcheck coverage build_in_docker
 .DEFAULT_GOAL := help
