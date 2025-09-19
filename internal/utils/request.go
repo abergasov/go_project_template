@@ -11,12 +11,12 @@ import (
 )
 
 type CurlConf[T any] struct {
-	Decoder func(io.Reader) (*T, error)
+	Decoder func(io.Reader) error
 }
 
 type CurlOpts[T any] func(*CurlConf[T])
 
-func WithDecoder[T any](decoder func(io.Reader) (*T, error)) func(*CurlConf[T]) {
+func WithDecoder[T any](decoder func(io.Reader) error) func(*CurlConf[T]) {
 	return func(c *CurlConf[T]) {
 		c.Decoder = decoder
 	}
@@ -72,7 +72,7 @@ func GetCurl[T any](ctx context.Context, targetURL string, headers map[string]st
 	return executeWithDefaultClient[T](req, config.Decoder)
 }
 
-func executeWithDefaultClient[T any](req *http.Request, decoder func(io.Reader) (*T, error)) (res *T, statusCode int, err error) {
+func executeWithDefaultClient[T any](req *http.Request, decoder func(io.Reader) error) (res *T, statusCode int, err error) {
 	client := http.DefaultClient
 	resp, err := client.Do(req)
 	if err != nil {
@@ -80,8 +80,7 @@ func executeWithDefaultClient[T any](req *http.Request, decoder func(io.Reader) 
 	}
 	defer resp.Body.Close()
 	if decoder != nil {
-		result, errD := decoder(resp.Body)
-		return result, resp.StatusCode, errD
+		return nil, resp.StatusCode, decoder(resp.Body)
 	}
 	b, err := io.ReadAll(resp.Body)
 	if err != nil {
