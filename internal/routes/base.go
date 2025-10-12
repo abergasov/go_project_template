@@ -5,7 +5,11 @@ import (
 	"go_project_template/internal/service/sampler"
 
 	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v2/middleware/adaptor"
 	"github.com/gofiber/fiber/v2/middleware/recover"
+	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/collectors"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
 
 type Server struct {
@@ -16,7 +20,7 @@ type Server struct {
 }
 
 // InitAppRouter initializes the HTTP Server.
-func InitAppRouter(log logger.AppLogger, service *sampler.Service, address string) *Server {
+func InitAppRouter(log logger.AppLogger, service *sampler.Service, address string, enableTelemetry bool) *Server {
 	app := &Server{
 		appAddr:    address,
 		httpEngine: fiber.New(fiber.Config{}),
@@ -24,6 +28,15 @@ func InitAppRouter(log logger.AppLogger, service *sampler.Service, address strin
 		log:        log.With(logger.WithService("http")),
 	}
 	app.httpEngine.Use(recover.New())
+	if enableTelemetry {
+		reg := prometheus.NewRegistry()
+		reg.MustRegister(
+			collectors.NewGoCollector(),
+			collectors.NewProcessCollector(collectors.ProcessCollectorOpts{}),
+			collectors.NewBuildInfoCollector(),
+		)
+		app.httpEngine.Get("/metrics", adaptor.HTTPHandler(promhttp.HandlerFor(reg, promhttp.HandlerOpts{})))
+	}
 	app.initRoutes()
 	return app
 }

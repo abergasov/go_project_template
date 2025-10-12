@@ -1,5 +1,6 @@
 app_port: 8000
 migrates_folder: migrations
+enable_telemetry: true
 conf_db:
   address: dbPostgres
   port: 5432
