@@ -32,7 +32,7 @@ jobs:
         with:
           go-version: ${{ env.go-version }}
           cache: true
-      - name: install
+      - name: install govulncheck
         run: go install golang.org/x/vuln/cmd/govulncheck@${{ env.vuln-version }}
       - name: govulncheck
         run: make vulcheck
