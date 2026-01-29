@@ -6,8 +6,10 @@ import (
 	"fmt"
 	"go_project_template/internal/logger"
 	"go_project_template/internal/routes"
+	"net"
 	"net/http"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/require"
 )
@@ -31,6 +33,7 @@ func NewTestServer(t *testing.T, container *TestContainer) *TestServer {
 		require.NoError(t, appHTTPServer.Stop())
 	})
 	go appHTTPServer.Run() //nolint:errcheck // ignore error as we are not interested in it
+	srv.waitForReady(t)
 	return srv
 }
 
@@ -100,4 +103,16 @@ func (ts *TestServer) Request(t *testing.T, method string, path string, body int
 
 func (ts *TestServer) CreateToken(_ *testing.T, _ string) string {
 	return "test_token"
+}
+
+func (ts *TestServer) waitForReady(t testing.TB) {
+	t.Helper()
+	require.Eventually(t, func() bool {
+		conn, err := net.DialTimeout("tcp", fmt.Sprintf("127.0.0.1:%d", ts.appPort), 100*time.Millisecond)
+		if err == nil {
+			_ = conn.Close()
+			return true
+		}
+		return false
+	}, 5*time.Second, 10*time.Millisecond, "failed to start test HTTP server")
 }
