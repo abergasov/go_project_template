@@ -48,7 +48,7 @@ func main() {
 	service := samplerService.InitService(ctx, appLog, repo)
 
 	appLog.Info("init http service")
-	appHTTPServer := routes.InitAppRouter(appLog, service, fmt.Sprintf(":%d", appConf.AppPort))
+	appHTTPServer := routes.InitAppRouter(appLog, service, fmt.Sprintf(":%d", appConf.AppPort), true)
 	defer func() {
 		if err = appHTTPServer.Stop(); err != nil {
 			appLog.Fatal("unable to stop http service", err)

@@ -1,7 +1,6 @@
 package utils
 
 import (
-	"golang.org/x/exp/constraints"
 	"sort"
 )
 
@@ -75,13 +74,6 @@ func UniqueSlice[T comparable](slice []T) []T {
 		}
 	}
 	return list
-}
-
-func Max[T constraints.Ordered](a, b T) T {
-	if b > a {
-		return b
-	}
-	return a
 }
 
 func StringsFromObjectMap[T any, K comparable](src map[K]T, extractor func(T) string) []string {

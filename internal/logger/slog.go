@@ -1,123 +1,76 @@
 package logger
 
 import (
+	"go_project_template/internal/utils"
 	"io"
 	"log/slog"
 	"os"
-	"runtime/debug"
 	"strings"
-	"sync"
-	"time"
 )
 
 type SLogger struct {
-	logWriters []*slog.Logger // since we not modify this slice, we able avoid mutex usage
+	logger *slog.Logger
 }
 
 var _ AppLogger = (*SLogger)(nil)
 
-func NewAppSLogger(args ...StringWith) AppLogger {
-	return InitLogger([]io.Writer{
-		os.Stdout,
-	}, args...)
+func NewAppSLogger(args ...Field) AppLogger {
+	return InitLogger([]io.Writer{os.Stdout}, args...)
 }
 
-func getLastCommitHash() string {
-	info, ok := debug.ReadBuildInfo()
-	if !ok {
-		return ""
-	}
-	data := strings.Split(strings.ReplaceAll(info.Main.Version, "+dirty", ""), "-")
-	res := data[len(data)-1]
-	if len(res) > 7 {
-		return res[:7]
-	}
-	return res
-}
-
-func InitLogger(writers []io.Writer, args ...StringWith) AppLogger {
-	logs := make([]*slog.Logger, 0, len(writers))
+func InitLogger(writers []io.Writer, args ...Field) AppLogger {
+	handlers := make([]slog.Handler, 0, len(writers))
 	for _, w := range writers {
-		handler := slog.NewJSONHandler(w, &slog.HandlerOptions{
+		handlers = append(handlers, slog.NewJSONHandler(w, &slog.HandlerOptions{
 			ReplaceAttr: func(groups []string, a slog.Attr) slog.Attr {
 				switch a.Key {
-				case "time":
-					return slog.Int64("timestamp", time.Now().Unix())
 				case "level":
-					return slog.String("_level", strings.ToLower(a.Value.String()))
-				case "gray_log_level":
-					return slog.Int64("level", a.Value.Int64())
-				case "msg":
-					return slog.String("short_message", a.Value.String())
+					return slog.String("_lvl", strings.ToLower(a.Value.String()))
 				}
 				return a
 			},
-		})
-		attrs := make([]any, 0, len(args)+1)
-		for _, arg := range args {
-			attrs = append(attrs, slog.String(arg.Key, arg.Val))
-		}
-
-		if commitHash := getLastCommitHash(); commitHash != "" {
-			attrs = append(attrs, slog.String("commit", commitHash))
-		}
-
-		lw := slog.New(handler).With(attrs...)
-		logs = append(logs, lw)
+		}))
 	}
-	return &SLogger{logWriters: logs}
+	attrs := make([]any, 0, len(args)+1)
+	for _, arg := range args {
+		attrs = append(attrs, arg.a)
+	}
+	attrs = append(attrs, slog.String("commit", utils.GetCommitHash()))
+
+	mh := slog.NewMultiHandler(handlers...)
+	return &SLogger{logger: slog.New(mh).With(attrs...)}
 }
 
-func (l *SLogger) Info(message string, args ...StringWith) {
+func (l *SLogger) Info(message string, args ...Field) {
 	params := prepareSlogParams(nil, args)
-	l.processWriters(func(lg *slog.Logger) {
-		lg.Info(message, params...)
-	})
+	l.logger.Info(message, params...)
 }
 
-func (l *SLogger) Error(message string, err error, args ...StringWith) {
+func (l *SLogger) Error(message string, err error, args ...Field) {
 	params := prepareSlogParams(err, args)
-	l.processWriters(func(lg *slog.Logger) {
-		lg.Error(message, params...)
-	})
+	l.logger.Error(message, params...)
 }
 
-func (l *SLogger) Fatal(message string, err error, args ...StringWith) {
+func (l *SLogger) Fatal(message string, err error, args ...Field) {
 	params := prepareSlogParams(err, args)
-	l.processWriters(func(lg *slog.Logger) {
-		lg.Error(message, params...)
-	})
+	l.logger.Error(message, params...)
+	l.logger.Info("fatal error; exiting")
 	os.Exit(1)
 }
 
-func (l *SLogger) With(args ...StringWith) AppLogger {
-	logs := make([]*slog.Logger, 0, len(l.logWriters))
-	for _, lg := range l.logWriters {
-		logs = append(logs, lg.With(prepareSlogParams(nil, args)...))
-	}
-	return &SLogger{
-		logWriters: logs,
-	}
+// With creates a child logger with additional structured context.
+func (l *SLogger) With(fields ...Field) AppLogger {
+	return &SLogger{logger: l.logger.With(prepareSlogParams(nil, fields)...)}
 }
 
-func prepareSlogParams(err error, args []StringWith) []any {
-	params := make([]any, 0, len(args)+2)
+func prepareSlogParams(err error, fields []Field) []any {
+	params := make([]any, 0, len(fields)+1)
 	if err != nil {
-		params = append(params, WithString("error", err.Error()).slog())
+		params = append(params, slog.String("error", err.Error()))
 	}
-	for _, arg := range args {
-		params = append(params, arg.slog())
+
+	for i := range fields {
+		params = append(params, fields[i].a)
 	}
 	return params
-}
-func (l *SLogger) processWriters(processor func(*slog.Logger)) {
-	var wg sync.WaitGroup
-	wg.Add(len(l.logWriters))
-	for i := range l.logWriters {
-		go func(j int) {
-			processor(l.logWriters[j])
-			wg.Done()
-		}(i)
-	}
-	wg.Wait()
 }

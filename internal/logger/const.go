@@ -2,29 +2,28 @@ package logger
 
 import (
 	_ "embed"
-	"fmt"
 )
 
-func WithMethod(method string) StringWith {
-	return StringWith{Key: "_method", Val: method}
+func WithMethod(method string) Field {
+	return WithString("method", method)
 }
 
-func WithNetworkName(network string) StringWith {
-	return StringWith{Key: "_network_name", Val: network}
+func WithNetworkName(network string) Field {
+	return WithString("network_name", network)
 }
 
-func WithETHNetwork() StringWith {
-	return StringWith{Key: "_network", Val: "eth"}
+func WithETHNetwork() Field {
+	return WithNetworkName("eth")
 }
 
-func WithTransaction(txHash string) StringWith {
-	return StringWith{Key: "_transaction_hash", Val: txHash}
+func WithTransaction(txHash string) Field {
+	return WithString("_transaction_hash", txHash)
 }
 
-func WithBlockNumber(blockNumber uint64) StringWith {
-	return StringWith{Key: "_block_id", Val: fmt.Sprint(blockNumber)}
+func WithBlockNumber(blockNumber uint64) Field {
+	return WithUnt64("block_number", blockNumber)
 }
 
-func WithService(serviceName string) StringWith {
-	return StringWith{Key: "_service", Val: serviceName}
+func WithService(serviceName string) Field {
+	return WithString("service", serviceName)
 }
