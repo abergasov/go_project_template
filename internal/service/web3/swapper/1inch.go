@@ -123,7 +123,7 @@ func (s *Service) Swap1Inch(
 
 	broadcastTx := types.NewTx(&types.DynamicFeeTx{
 		ChainID:   chainID,
-		To:        utils.ToPointer(common.HexToAddress(res.Tx.To)),
+		To:        new(common.HexToAddress(res.Tx.To)),
 		Nonce:     nonce,
 		GasTipCap: gasTipCap,
 		GasFeeCap: gasFeeCap,

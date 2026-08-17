@@ -1,4 +1,4 @@
-# AGENTS.md — Optimum Gateway Developer Guide
+# AGENTS.md
 
 ## Operating rules
 
@@ -101,6 +101,50 @@ Do not patch blindly.
 
 Do not add new Go module dependencies, new top-level packages, or new public APIs unless the task requires them.
 Prefer existing packages, config fields, and interfaces.
+
+## Architecture rules
+
+### Repository boundary
+
+All application data storage operations must go through the repository layer.
+
+Services, handlers, routes, jobs, and other application code must not call storage clients directly.
+They should depend on repository APIs and let repositories own reads, writes, transactions, queries, key operations, and persistence-specific details.
+
+Storage packages are responsible for low-level adapters, connection setup, client wrappers, and storage-specific configuration.
+Repository packages are responsible for application-level persistence behavior.
+The composition root wires storage into repositories and repositories into services.
+
+Repository methods should accept `context.Context` when an operation can touch external storage or block on I/O.
+Do not expose backend query syntax, storage object names, transaction handles, raw clients, or driver-specific details outside repositories.
+Repositories should return application-level results and errors, wrapping lower-level errors when useful instead of leaking storage internals into services.
+
+### Composition root
+
+Create concrete infrastructure dependencies in the application bootstrap/composition root.
+Do not construct storage clients, repositories, external clients, or long-lived infrastructure dependencies inside services, handlers, routes, or repositories unless that type owns the dependency lifecycle.
+
+Keep these rules independent of any concrete storage technology.
+A project generated from this template may use a different storage backend.
+Do not encode architecture rules around a specific backend or domain service.
+
+### Test architecture
+
+All Go tests must live in external test packages with the `_test` suffix, for example `package service_test`.
+Do not place tests in the production package to access unexported details unless the task explicitly requires it and the reason is stated.
+
+Tests must not modify application storage directly.
+Create, update, delete, and lookup test data through repository APIs.
+Shared test infrastructure may create, migrate, isolate, or clean test storage, but individual tests should exercise persistence through repositories.
+Direct storage operations in tests are allowed only inside shared test helpers for lifecycle tasks such as creating, migrating, isolating, or cleaning test storage.
+Individual tests must not call low-level clients to insert, update, delete, truncate, or query application data.
+
+Use `require` from `testify` for test assertions and setup checks.
+Do not mix in `assert` unless there is a stated reason.
+
+Structure non-trivial tests as Given-When-Then.
+Use comments or clear local blocks to separate setup, action, and verification.
+Table-driven tests are fine, but each case should still make its given, when, and then obvious.
 
 ## Code quality rules
 

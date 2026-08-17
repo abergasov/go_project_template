@@ -10,8 +10,7 @@ import (
 
 func TestFromPointer(t *testing.T) {
 	test := uuid.NewString()
-	pointer := utils.ToPointer(test)
-	result := utils.FromPointer(pointer)
+	result := utils.FromPointer(new(test))
 	require.Equal(t, test, result)
 
 	var sample *string

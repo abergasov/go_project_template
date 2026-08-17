@@ -2,17 +2,14 @@ package config
 
 import (
 	"fmt"
-	"log"
-	"os"
+	"go_project_template/internal/utils/config"
 	"path/filepath"
-
-	"gopkg.in/yaml.v3"
 )
 
 type AppConfig struct {
-	AppPort         int       `yaml:"app_port"`
-	EnableTelemetry bool      `yaml:"enable_telemetry"`
-	MigratesFolder  string    `yaml:"migrates_folder"`
+	AppPort         int       `yaml:"app_port" env:"APP_PORT" flag:"app_port" default:"8000"`
+	EnableTelemetry bool      `yaml:"enable_telemetry" env:"ENABLE_TELEMETRY" flag:"enable_telemetry" default:"true"`
+	MigratesFolder  string    `yaml:"migrates_folder" env:"MIGRATES_FOLDER" flag:"migrates_folder" default:"migrations"`
 	ConfigDB        DBConf    `yaml:"conf_db"`
 	ConfigGraph     GraphConf `yaml:"conf_graph"`
 }
@@ -27,29 +24,23 @@ type GraphConf struct {
 }
 
 type DBConf struct {
-	Address        string `yaml:"address"`
-	Port           string `yaml:"port"`
-	User           string `yaml:"user"`
-	Pass           string `yaml:"pass"`
-	DBName         string `yaml:"db_name"`
-	MaxConnections int    `yaml:"max_connections"`
+	Address        string `yaml:"address" env:"DB_ADDRESS" flag:"db_address" default:"localhost"`
+	Port           string `yaml:"port" env:"DB_PORT" flag:"db_port" default:"5432"`
+	User           string `yaml:"user" env:"DB_USER" flag:"db_user" default:"user"`
+	Pass           string `yaml:"pass" env:"DB_PASS" flag:"db_pass"`
+	DBName         string `yaml:"db_name" env:"DB_NAME" flag:"db_name" default:"dbname"`
+	MaxConnections int    `yaml:"max_connections" env:"DB_MAX_CONNECTIONS" flag:"db_max_connections" default:"10"`
 }
 
-func InitConf(confFile string) (*AppConfig, error) {
-	file, err := os.Open(filepath.Clean(confFile))
-	if err != nil {
-		return nil, fmt.Errorf("error open config file: %w", err)
+func InitConf(confFile *string) (*AppConfig, error) {
+	options := make([]config.Option, 0, 1)
+	if confFile != nil && *confFile != "" {
+		options = append(options, config.WithYAML(filepath.Clean(*confFile)))
 	}
-	defer func() {
-		if e := file.Close(); e != nil {
-			log.Fatal("Error close config file", e)
-		}
-	}()
 
 	var cfg AppConfig
-	if err = yaml.NewDecoder(file).Decode(&cfg); err != nil {
-		return nil, fmt.Errorf("error decode config file: %w", err)
+	if err := config.Load(&cfg, options...); err != nil {
+		return nil, fmt.Errorf("error load config: %w", err)
 	}
-
 	return &cfg, nil
 }

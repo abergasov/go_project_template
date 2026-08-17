@@ -28,6 +28,7 @@ linters:
     - unparam
     - unused
     - whitespace
+    - modernize
   settings:
     depguard:
       rules:

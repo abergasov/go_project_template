@@ -131,7 +131,7 @@ func Test_FuncRepeater(t *testing.T) {
 	t.Run("should return result from pointer return type", func(t *testing.T) {
 		data := uuid.NewString()
 		fn := func() (*string, error) {
-			return utils.ToPointer(data), nil
+			return new(data), nil
 		}
 		res, err := utils.NewFuncRepeater(fn).Run()
 		require.NoError(t, err)

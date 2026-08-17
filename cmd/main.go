@@ -24,7 +24,7 @@ func main() {
 	appLog := logger.NewAppSLogger()
 
 	appLog.Info("app starting", logger.WithString("conf", *confFile))
-	appConf, err := config.InitConf(*confFile)
+	appConf, err := config.InitConf(confFile)
 	if err != nil {
 		appLog.Fatal("unable to init config", err, logger.WithString("config", *confFile))
 	}
